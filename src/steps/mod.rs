@@ -13,3 +13,6 @@ pub trait TestStep {
 
 mod build;
 pub use self::build::BuildStepFactory;
+
+mod collect_errors;
+pub use self::collect_errors::{CollectErrorsStepFactory, CompilerMessage};
