@@ -1,0 +1,6 @@
+[package]
+name = "expand-1"
+version = "0.1.0"
+authors = ["Denys Zariaiev <denys.zariaiev@gmail.com>"]
+
+[dependencies]

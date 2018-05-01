@@ -1,0 +1,9 @@
+[package]
+name = "crate-compile-test"
+version = "0.1.0"
+authors = ["Denys Zariaiev <denys.zariaiev@gmail.com>"]
+
+[dependencies]
+walkdir = "2.1"
+failure = "0.1"
+tempfile = "3.0"
