@@ -1,2 +1,2 @@
 mod build;
-mod collect_errors;
+mod check_errors;

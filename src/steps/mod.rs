@@ -14,5 +14,5 @@ pub trait TestStep {
 mod build;
 pub use self::build::BuildStepFactory;
 
-mod collect_errors;
-pub use self::collect_errors::{CollectErrorsStepFactory, CompilerMessage};
+mod check_errors;
+pub use self::check_errors::{CheckErrorsStepFactory, CompilerMessage, MessageLocation};

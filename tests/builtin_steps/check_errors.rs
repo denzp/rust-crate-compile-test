@@ -2,11 +2,11 @@ use std::path::Path;
 use tempfile::tempdir;
 
 use crate_compile_test::config::{Config, Mode};
-use crate_compile_test::steps::{CollectErrorsStepFactory, TestStepFactory};
+use crate_compile_test::steps::{CheckErrorsStepFactory, TestStepFactory};
 
 #[test]
 fn it_should_handle_success() {
-    let step = CollectErrorsStepFactory::new();
+    let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
     let config = Config::new(Mode::BuildSuccess, "example-tests/build-success");
@@ -26,7 +26,7 @@ fn it_should_handle_success() {
 
 #[test]
 fn it_should_handle_fail() {
-    let step = CollectErrorsStepFactory::new();
+    let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
     let config = Config::new(Mode::BuildSuccess, "example-tests/build-fail");
@@ -42,39 +42,21 @@ fn it_should_handle_fail() {
         error.to_string(),
         "Compiler messages don't fulfill expectations!
 ### Unexpected messages:
-[
-    CompilerMessage {
-        message: \"unresolved import `mod2::func3`\",
-        level: Error,
-        code: Some(
-            \"E0432\"
-        ),
-        location: MessageLocation {
-            file: \"src/lib.rs\",
-            line: 2
-        }
-    },
-    CompilerMessage {
-        message: \"cannot find type `NonExistingType` in this scope\",
-        level: Error,
-        code: Some(
-            \"E0412\"
-        ),
-        location: MessageLocation {
-            file: \"src/lib.rs\",
-            line: 10
-        }
-    }
-]
+  - file:    src/lib.rs:2
+    message: (Error E0432) unresolved import `mod2::func3`
+
+  - file:    src/lib.rs:10
+    message: (Error E0412) cannot find type `NonExistingType` in this scope
+
 ### Missing messages:
-[]
+
 ###",
     );
 }
 
 #[test]
 fn it_should_use_cargo_from_config() {
-    let step = CollectErrorsStepFactory::new();
+    let step = CheckErrorsStepFactory::new();
 
     let mut config = Config::new(Mode::BuildFail, "example-tests/build-fail");
     config.cargo_command = "some-non-existing-command".into();
@@ -89,7 +71,7 @@ fn it_should_use_cargo_from_config() {
 
 #[test]
 fn it_should_use_cargo_env_from_config() {
-    let step = CollectErrorsStepFactory::new();
+    let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
     let mut config = Config::new(Mode::BuildFail, "example-tests/build-fail");
@@ -111,7 +93,7 @@ fn it_should_use_cargo_env_from_config() {
 
 #[test]
 fn it_should_use_target_from_config() {
-    let step = CollectErrorsStepFactory::new();
+    let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
     let mut config = Config::new(Mode::BuildSuccess, "example-tests/build-success");

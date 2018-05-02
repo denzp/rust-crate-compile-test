@@ -10,6 +10,7 @@ extern crate serde_json;
 extern crate tempfile;
 extern crate walkdir;
 
+pub mod cargo_messages;
 pub mod config;
 pub mod error;
 pub mod steps;
