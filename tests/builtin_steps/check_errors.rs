@@ -43,13 +43,21 @@ fn it_should_handle_fail() {
         error.to_string(),
         "Compiler messages don't fulfill expectations!
 ### Unexpected messages:
-  - file:    src/lib.rs:2
-    message: (Error E0432) unresolved import `mod2::func3`
-
   - file:    src/lib.rs:12
     message: (Error E0412) cannot find type `NonExistingType` in this scope
 
 ### Missing messages:
+  - file:    src/lib.rs:2
+    message: (Warning) another warning
+
+  - file:    src/lib.rs:12
+    message: (Error E0433)
+
+  - file:    src/lib.rs:17
+    message: (Note) With extra space
+
+  - file:    src/lib.rs:17
+    message: (Help) For previous line
 
 ###",
     );
@@ -69,7 +77,7 @@ fn it_should_collect_expected_messages() {
 
                 level: DiagnosticLevel::Warning,
                 location: MessageLocation {
-                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    file: PathBuf::from("src/lib.rs"),
                     line: 2
                 }
             },
@@ -79,7 +87,7 @@ fn it_should_collect_expected_messages() {
 
                 level: DiagnosticLevel::Error,
                 location: MessageLocation {
-                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    file: PathBuf::from("src/lib.rs"),
                     line: 2
                 }
             },
@@ -89,7 +97,7 @@ fn it_should_collect_expected_messages() {
 
                 level: DiagnosticLevel::Error,
                 location: MessageLocation {
-                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    file: PathBuf::from("src/lib.rs"),
                     line: 2
                 }
             },
@@ -99,7 +107,7 @@ fn it_should_collect_expected_messages() {
 
                 level: DiagnosticLevel::Error,
                 location: MessageLocation {
-                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    file: PathBuf::from("src/lib.rs"),
                     line: 12
                 }
             },
@@ -109,7 +117,7 @@ fn it_should_collect_expected_messages() {
 
                 level: DiagnosticLevel::Note,
                 location: MessageLocation {
-                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    file: PathBuf::from("src/lib.rs"),
                     line: 17
                 }
             },
@@ -119,7 +127,7 @@ fn it_should_collect_expected_messages() {
 
                 level: DiagnosticLevel::Help,
                 location: MessageLocation {
-                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    file: PathBuf::from("src/lib.rs"),
                     line: 17
                 }
             },

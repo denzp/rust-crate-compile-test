@@ -1,6 +1,7 @@
 use failure::ResultExt;
 use regex::Regex;
 use serde_json as json;
+use std::cmp;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -14,13 +15,13 @@ use error::{Result, TestingError};
 
 pub use cargo_messages::DiagnosticLevel;
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct MessageLocation {
     pub file: PathBuf,
     pub line: usize,
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct CompilerMessage {
     pub message: Option<String>,
     pub level: DiagnosticLevel,
@@ -32,7 +33,7 @@ pub struct CheckErrorsStepFactory;
 
 struct CheckErrorsStep {
     crate_dir: PathBuf,
-    _expected_messages: Vec<CompilerMessage>,
+    expected_messages: Vec<CompilerMessage>,
 }
 
 impl CheckErrorsStepFactory {
@@ -48,7 +49,12 @@ impl CheckErrorsStepFactory {
         let mut messages = vec![];
 
         source_file.lines().fold(1, |line_num, line| {
-            Self::analyse_source_line(&source_path, (line_num, &line.unwrap()), &mut messages);
+            Self::analyse_source_line(
+                &Path::new("src/lib.rs"),
+                (line_num, &line.unwrap()),
+                &mut messages,
+            );
+
             line_num + 1
         });
 
@@ -106,7 +112,7 @@ impl CheckErrorsStep {
     pub fn new(crate_dir: PathBuf, expected_messages: Vec<CompilerMessage>) -> Self {
         CheckErrorsStep {
             crate_dir,
-            _expected_messages: expected_messages,
+            expected_messages,
         }
     }
 
@@ -175,14 +181,47 @@ impl TestStep for CheckErrorsStep {
     fn execute(&self, config: &Config, build_path: &Path) -> Result<()> {
         let actual_messages = self.find_actual_messages(config, build_path)?;
 
+        let unexpected_messages: Vec<_> = actual_messages
+            .clone()
+            .into_iter()
+            .filter(|item| !self.expected_messages.contains(item))
+            .collect();
+
+        let missing_messages: Vec<_> = self.expected_messages
+            .clone()
+            .into_iter()
+            .filter(|item| !actual_messages.contains(item))
+            .collect();
+
         if actual_messages.len() > 0 {
             bail!(TestingError::MessageExpectationsFailed {
-                unexpected: actual_messages,
-                missing: vec![],
-            })
+                unexpected: unexpected_messages,
+                missing: missing_messages,
+            });
         }
 
         Ok(())
+    }
+}
+
+impl cmp::PartialEq for CompilerMessage {
+    fn eq(&self, other: &CompilerMessage) -> bool {
+        println!("{:?} {:?}", self.location, other.location);
+        println!("{:?} {:?}", self.level, other.level);
+
+        if self.location != other.location || self.level != other.level {
+            return false;
+        }
+
+        if self.code.is_some() && other.code.is_some() {
+            return self.code.as_ref().unwrap() == other.code.as_ref().unwrap();
+        }
+
+        match (&self.message, &other.message) {
+            (Some(ref lhs), Some(ref rhs)) => lhs == rhs,
+
+            _ => false,
+        }
     }
 }
 

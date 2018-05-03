@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use steps::{CompilerMessage, MessageLocation};
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum DiagnosticLevel {
     Error,
