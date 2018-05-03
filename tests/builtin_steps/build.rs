@@ -53,13 +53,13 @@ fn it_should_handle_fail() {
 error[E0432]: unresolved import `mod2::func3`
  --> src/lib.rs:2:9
   |
-2 |     use mod2::func3;
+2 |     use mod2::func3; //~  WARNING another warning
   |         ^^^^^^^^^^^ no `func3` in `mod2`. Did you mean to use `func2`?
 
 error[E0412]: cannot find type `NonExistingType` in this scope
-  --> src/lib.rs:10:19
+  --> src/lib.rs:12:19
    |
-10 |     fn func2() -> NonExistingType {{
+12 |     fn func2() -> NonExistingType {{
    |                   ^^^^^^^^^^^^^^^ not found in this scope
 
 error: aborting due to 2 previous errors

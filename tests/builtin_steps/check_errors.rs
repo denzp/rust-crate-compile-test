@@ -1,8 +1,9 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 
 use crate_compile_test::config::{Config, Mode};
-use crate_compile_test::steps::{CheckErrorsStepFactory, TestStepFactory};
+use crate_compile_test::steps::{CheckErrorsStepFactory, CompilerMessage, DiagnosticLevel,
+                                MessageLocation, TestStepFactory};
 
 #[test]
 fn it_should_handle_success() {
@@ -45,12 +46,84 @@ fn it_should_handle_fail() {
   - file:    src/lib.rs:2
     message: (Error E0432) unresolved import `mod2::func3`
 
-  - file:    src/lib.rs:10
+  - file:    src/lib.rs:12
     message: (Error E0412) cannot find type `NonExistingType` in this scope
 
 ### Missing messages:
 
 ###",
+    );
+}
+
+#[test]
+fn it_should_collect_expected_messages() {
+    let crate_path = Path::new("example-tests/build-fail/fail-1");
+    let messages = CheckErrorsStepFactory::collect_crate_messages(&crate_path).unwrap();
+
+    assert_eq!(
+        messages,
+        &[
+            CompilerMessage {
+                message: Some("another warning".into()),
+                code: None,
+
+                level: DiagnosticLevel::Warning,
+                location: MessageLocation {
+                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    line: 2
+                }
+            },
+            CompilerMessage {
+                message: None,
+                code: Some("E0432".into()),
+
+                level: DiagnosticLevel::Error,
+                location: MessageLocation {
+                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    line: 2
+                }
+            },
+            CompilerMessage {
+                message: Some("unresolved import `mod2::func3`".into()),
+                code: None,
+
+                level: DiagnosticLevel::Error,
+                location: MessageLocation {
+                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    line: 2
+                }
+            },
+            CompilerMessage {
+                message: None,
+                code: Some("E0433".into()),
+
+                level: DiagnosticLevel::Error,
+                location: MessageLocation {
+                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    line: 12
+                }
+            },
+            CompilerMessage {
+                message: Some("With extra space".into()),
+                code: None,
+
+                level: DiagnosticLevel::Note,
+                location: MessageLocation {
+                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    line: 17
+                }
+            },
+            CompilerMessage {
+                message: Some("For previous line".into()),
+                code: None,
+
+                level: DiagnosticLevel::Help,
+                location: MessageLocation {
+                    file: PathBuf::from("example-tests/build-fail/fail-1/src/lib.rs"),
+                    line: 17
+                }
+            },
+        ]
     );
 }
 
