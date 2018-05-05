@@ -2,12 +2,13 @@ use std::path::PathBuf;
 
 use steps::{CompilerMessage, MessageLocation};
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum DiagnosticLevel {
     Error,
     Warning,
     Note,
+    Help,
 
     #[serde(rename = "")]
     Empty,
@@ -49,6 +50,19 @@ impl Default for DiagnosticSpan {
     }
 }
 
+impl<'a> From<&'a str> for DiagnosticLevel {
+    fn from(text: &str) -> Self {
+        match text {
+            "ERROR" => DiagnosticLevel::Error,
+            "WARNING" => DiagnosticLevel::Warning,
+            "NOTE" => DiagnosticLevel::Note,
+            "HELP" => DiagnosticLevel::Help,
+
+            _ => DiagnosticLevel::Empty,
+        }
+    }
+}
+
 impl Into<CompilerMessage> for DiagnosticMessage {
     fn into(self) -> CompilerMessage {
         let span = self.spans
@@ -58,7 +72,7 @@ impl Into<CompilerMessage> for DiagnosticMessage {
             .unwrap_or_default();
 
         CompilerMessage {
-            message: self.message,
+            message: Some(self.message),
             level: self.level,
             code: self.code.map(|item| item.code),
             location: MessageLocation {

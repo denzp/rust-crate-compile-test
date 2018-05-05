@@ -44,35 +44,8 @@ fn it_should_handle_fail() {
 
     assert_eq!(
         error.to_string(),
-        format!(
-            "Unable to build the crate!
-### stdout:
-
-### stderr:
-   Compiling fail-1 v0.1.0 (file://{})
-error[E0432]: unresolved import `mod2::func3`
- --> src/lib.rs:2:9
-  |
-2 |     use mod2::func3;
-  |         ^^^^^^^^^^^ no `func3` in `mod2`. Did you mean to use `func2`?
-
-error[E0412]: cannot find type `NonExistingType` in this scope
-  --> src/lib.rs:10:19
-   |
-10 |     fn func2() -> NonExistingType {{
-   |                   ^^^^^^^^^^^^^^^ not found in this scope
-
-error: aborting due to 2 previous errors
-
-Some errors occurred: E0412, E0432.
-For more information about an error, try `rustc --explain E0412`.
-error: Could not compile `fail-1`.
-
-To learn more, run the command again with --verbose.
-
-###",
-            crate_path.to_string_lossy()
-        )
+        read_output!("tests/ui/fail-1.build.output")
+            .replace("$CRATE_PATH", &crate_path.to_string_lossy())
     );
 }
 

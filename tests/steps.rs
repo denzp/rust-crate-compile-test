@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate pretty_assertions;
+
 extern crate crate_compile_test;
 extern crate tempfile;
 

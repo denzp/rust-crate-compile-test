@@ -15,4 +15,5 @@ mod build;
 pub use self::build::BuildStepFactory;
 
 mod check_errors;
-pub use self::check_errors::{CheckErrorsStepFactory, CompilerMessage, MessageLocation};
+pub use self::check_errors::{CheckErrorsStepFactory, CompilerMessage, DiagnosticLevel,
+                             MessageLocation};

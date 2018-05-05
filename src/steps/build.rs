@@ -6,7 +6,8 @@ use config::Config;
 use error::{Result, TestingError};
 
 pub struct BuildStepFactory;
-pub struct BuildStep {
+
+struct BuildStep {
     crate_dir: PathBuf,
 }
 
