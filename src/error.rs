@@ -68,11 +68,10 @@ where
     S2: AsRef<str>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(self.header.as_ref())?;
+        write!(f, "{}", self.header.as_ref())?;
 
         if let Some(ref content) = self.content {
-            f.write_str("\n")?;
-            f.write_str(content.as_ref())?;
+            write!(f, "\n\n{}", content.as_ref())?;
         }
 
         Ok(())

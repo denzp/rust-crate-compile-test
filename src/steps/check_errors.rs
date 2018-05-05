@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use walkdir::WalkDir;
 
 use super::{TestStep, TestStepFactory};
 use cargo_messages;
@@ -42,21 +43,32 @@ impl CheckErrorsStepFactory {
     }
 
     pub fn collect_crate_messages(crate_path: &Path) -> Result<Vec<CompilerMessage>> {
-        let source_path = crate_path.join("src/lib.rs");
-        let source_file =
-            BufReader::new(File::open(&source_path).context("Unable to open crate source")?);
+        let sources = WalkDir::new(&crate_path.join("src"))
+            .into_iter()
+            .map(|entry| entry.unwrap())
+            .filter_map(|entry| {
+                println!("{:?}", entry);
+
+                match entry.path().extension().and_then(|item| item.to_str()) {
+                    Some("rs") => Some(PathBuf::from(entry.path())),
+                    _ => None,
+                }
+            });
 
         let mut messages = vec![];
 
-        source_file.lines().fold(1, |line_num, line| {
-            Self::analyse_source_line(
-                &Path::new("src/lib.rs"),
-                (line_num, &line.unwrap()),
-                &mut messages,
-            );
+        for path in sources {
+            let source_path = path.strip_prefix(crate_path)?;
+            let source_file = BufReader::new({
+                File::open(&path).context(format!("Unable to open source at {:?}", path))?
+            });
 
-            line_num + 1
-        });
+            source_file.lines().fold(1, |line_num, line| {
+                Self::analyse_source_line(&source_path, (line_num, &line.unwrap()), &mut messages);
+
+                line_num + 1
+            });
+        }
 
         Ok(messages)
     }
@@ -193,7 +205,7 @@ impl TestStep for CheckErrorsStep {
             .filter(|item| !actual_messages.contains(item))
             .collect();
 
-        if actual_messages.len() > 0 {
+        if unexpected_messages.len() > 0 || missing_messages.len() > 0 {
             bail!(TestingError::MessageExpectationsFailed {
                 unexpected: unexpected_messages,
                 missing: missing_messages,
@@ -206,9 +218,6 @@ impl TestStep for CheckErrorsStep {
 
 impl cmp::PartialEq for CompilerMessage {
     fn eq(&self, other: &CompilerMessage) -> bool {
-        println!("{:?} {:?}", self.location, other.location);
-        println!("{:?} {:?}", self.level, other.level);
-
         if self.location != other.location || self.level != other.level {
             return false;
         }

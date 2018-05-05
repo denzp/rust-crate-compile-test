@@ -1,0 +1,20 @@
+Compiler messages don't fulfill expectations!
+
+### Unexpected messages:
+  - file:    src/lib.rs:12
+    message: (Error E0412) cannot find type `NonExistingType` in this scope
+
+### Missing messages:
+  - file:    src/lib.rs:2
+    message: (Warning) another warning
+
+  - file:    src/lib.rs:12
+    message: (Error E0433)
+
+  - file:    src/lib.rs:17
+    message: (Note) With extra space
+
+  - file:    src/lib.rs:17
+    message: (Help) For previous line
+
+###
