@@ -11,12 +11,12 @@ fn it_should_handle_success() {
     let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let config = Config::new(Mode::BuildSuccess, "example-tests/build-success");
+    let config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
 
     // TODO: it should throw ealier - during initialization - because there are no expected messages
 
     let error = {
-        step.initialize(&config, &Path::new("example-tests/build-success/success-1"))
+        step.initialize(&config, &Path::new("example/tests/build-success/success-1"))
             .unwrap()
             .execute(&config, output_path.as_ref())
             .expect_err("It should throw error")
@@ -33,10 +33,10 @@ fn it_should_handle_fail() {
     let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let config = Config::new(Mode::BuildSuccess, "example-tests/build-fail");
+    let config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
 
     let error = {
-        step.initialize(&config, &Path::new("example-tests/build-fail/fail-1"))
+        step.initialize(&config, &Path::new("example/tests/build-fail/fail-1"))
             .unwrap()
             .execute(&config, output_path.as_ref())
             .expect_err("It should fail building the crate")
@@ -53,9 +53,9 @@ fn it_should_handle_all_matched_messages() {
     let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let config = Config::new(Mode::BuildSuccess, "example-tests/build-fail");
+    let config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
 
-    step.initialize(&config, &Path::new("example-tests/build-fail/fail-2"))
+    step.initialize(&config, &Path::new("example/tests/build-fail/fail-2"))
         .unwrap()
         .execute(&config, output_path.as_ref())
         .expect("It should finish without error");
@@ -63,7 +63,7 @@ fn it_should_handle_all_matched_messages() {
 
 #[test]
 fn it_should_collect_expected_messages() {
-    let crate_path = Path::new("example-tests/build-fail/fail-1");
+    let crate_path = Path::new("example/tests/build-fail/fail-1");
     let messages = CheckErrorsStepFactory::collect_crate_messages(&crate_path).unwrap();
 
     assert_eq!(
@@ -138,10 +138,10 @@ fn it_should_handle_nested_sources() {
     let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let config = Config::new(Mode::BuildSuccess, "example-tests/build-fail");
+    let config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
 
     let error = {
-        step.initialize(&config, &Path::new("example-tests/build-fail/fail-3"))
+        step.initialize(&config, &Path::new("example/tests/build-fail/fail-3"))
             .unwrap()
             .execute(&config, output_path.as_ref())
             .expect_err("It should fail building the crate")
@@ -155,7 +155,7 @@ fn it_should_handle_nested_sources() {
 
 #[test]
 fn it_should_collect_messages_from_nested_sources() {
-    let crate_path = Path::new("example-tests/build-fail/fail-3");
+    let crate_path = Path::new("example/tests/build-fail/fail-3");
     let messages = CheckErrorsStepFactory::collect_crate_messages(&crate_path).unwrap();
 
     assert_eq!(
@@ -249,12 +249,12 @@ fn it_should_collect_messages_from_nested_sources() {
 fn it_should_use_cargo_from_config() {
     let step = CheckErrorsStepFactory::new();
 
-    let mut config = Config::new(Mode::BuildFail, "example-tests/build-fail");
+    let mut config = Config::new(Mode::BuildFail, "example/tests/build-fail");
     config.cargo_command = "some-non-existing-command".into();
 
     let output_path = tempdir().unwrap();
 
-    step.initialize(&config, &Path::new("example-tests/build-fail/fail-1"))
+    step.initialize(&config, &Path::new("example/tests/build-fail/fail-1"))
         .unwrap()
         .execute(&config, output_path.as_ref())
         .expect_err("It should fail");
@@ -265,11 +265,11 @@ fn it_should_use_cargo_env_from_config() {
     let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let mut config = Config::new(Mode::BuildFail, "example-tests/build-fail");
+    let mut config = Config::new(Mode::BuildFail, "example/tests/build-fail");
     config.add_cargo_env("RUSTFLAGS", "--non-existing-flag");
 
     let error = {
-        step.initialize(&config, &Path::new("example-tests/build-fail/fail-1"))
+        step.initialize(&config, &Path::new("example/tests/build-fail/fail-1"))
             .unwrap()
             .execute(&config, output_path.as_ref())
             .expect_err("It should fail")
@@ -287,11 +287,11 @@ fn it_should_use_target_from_config() {
     let step = CheckErrorsStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let mut config = Config::new(Mode::BuildSuccess, "example-tests/build-success");
+    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
     config.target = Some("non-existing-target".into());
 
     let error = {
-        step.initialize(&config, &Path::new("example-tests/build-fail/fail-1"))
+        step.initialize(&config, &Path::new("example/tests/build-fail/fail-1"))
             .unwrap()
             .execute(&config, output_path.as_ref())
             .expect_err("It should fail")

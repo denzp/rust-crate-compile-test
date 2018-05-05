@@ -11,9 +11,9 @@ fn it_should_handle_success() {
     let step = BuildStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let config = Config::new(Mode::BuildSuccess, "example-tests/build-success");
+    let config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
 
-    step.initialize(&config, &Path::new("example-tests/build-success/success-1"))
+    step.initialize(&config, &Path::new("example/tests/build-success/success-1"))
         .unwrap()
         .execute(&config, output_path.as_ref())
         .expect("It should successfully build the crate");
@@ -31,9 +31,9 @@ fn it_should_handle_fail() {
 
     let output_path = tempdir().unwrap();
     let mut crate_path = env::current_dir().unwrap();
-    crate_path.push(Path::new("example-tests/build-fail/fail-1"));
+    crate_path.push(Path::new("example/tests/build-fail/fail-1"));
 
-    let config = Config::new(Mode::BuildSuccess, "example-tests/build-fail");
+    let config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
 
     let error = {
         step.initialize(&config, &crate_path)
@@ -53,12 +53,12 @@ fn it_should_handle_fail() {
 fn it_should_use_cargo_from_config() {
     let step = BuildStepFactory::new();
 
-    let mut config = Config::new(Mode::BuildSuccess, "example-tests/build-success");
+    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
     config.cargo_command = "some-non-existing-command".into();
 
     let output_path = tempdir().unwrap();
 
-    step.initialize(&config, &Path::new("example-tests/build-success/success-1"))
+    step.initialize(&config, &Path::new("example/tests/build-success/success-1"))
         .unwrap()
         .execute(&config, output_path.as_ref())
         .expect_err("It should fail");
@@ -69,11 +69,11 @@ fn it_should_use_cargo_env_from_config() {
     let step = BuildStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let mut config = Config::new(Mode::BuildSuccess, "example-tests/build-success");
+    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
     config.add_cargo_env("RUSTFLAGS", "--non-existing-flag");
 
     let error = {
-        step.initialize(&config, &Path::new("example-tests/build-success/success-1"))
+        step.initialize(&config, &Path::new("example/tests/build-success/success-1"))
             .unwrap()
             .execute(&config, output_path.as_ref())
             .expect_err("It should fail")
@@ -91,11 +91,11 @@ fn it_should_use_target_from_config() {
     let step = BuildStepFactory::new();
     let output_path = tempdir().unwrap();
 
-    let mut config = Config::new(Mode::BuildSuccess, "example-tests/build-success");
+    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
     config.target = Some("non-existing-target".into());
 
     let error = {
-        step.initialize(&config, &Path::new("example-tests/build-success/success-1"))
+        step.initialize(&config, &Path::new("example/tests/build-success/success-1"))
             .unwrap()
             .execute(&config, output_path.as_ref())
             .expect_err("It should fail")
