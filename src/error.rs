@@ -1,6 +1,7 @@
 use failure::Error;
 use std::fmt;
 
+use formatting;
 use steps::CompilerMessage;
 
 pub type Result<T> = ::std::result::Result<T, Error>;
@@ -39,10 +40,19 @@ impl fmt::Display for TestingError {
 
             TestingError::CrateBuildFailed { stdout, stderr } => ErrorDisplay {
                 header: "Unable to build the crate!",
-                content: Some(format!(
-                    "### stdout:\n{}\n### stderr:\n{}\n###",
-                    stdout, stderr
-                )),
+                content: Some({
+                    let mut output = String::new();
+
+                    if stdout.len() > 0 {
+                        output += &format!("{}\n", formatting::display_block("stdout:", stdout));
+                    }
+
+                    if stderr.len() > 0 {
+                        output += &format!("{}", formatting::display_block("stderr:", stderr));
+                    }
+
+                    output
+                }),
             },
 
             TestingError::MessageExpectationsFailed {
@@ -51,9 +61,9 @@ impl fmt::Display for TestingError {
             } => ErrorDisplay {
                 header: "Compiler messages don't fulfill expectations!",
                 content: Some(format!(
-                    "### Unexpected messages:\n{}\n### Missing messages:\n{}\n###",
-                    utils::display_list(unexpected),
-                    utils::display_list(missing)
+                    "Unexpected messages:\n{}\nMissing messages:\n{}\n",
+                    formatting::display_list(unexpected),
+                    formatting::display_list(missing)
                 )),
             },
         };
@@ -75,40 +85,5 @@ where
         }
 
         Ok(())
-    }
-}
-
-mod utils {
-    use std::fmt;
-
-    pub fn display_list<T: fmt::Display>(list: &Vec<T>) -> String {
-        if list.len() == 0 {
-            return "".into();
-        }
-
-        trim_lines(prefix_each_line(
-            String::from("- ")
-                + &list.iter()
-                    .map(|item| prefix_each_next_line(item.to_string(), "  "))
-                    .collect::<Vec<_>>()
-                    .join("\n\n- ") + "\n",
-            "  ",
-        ))
-    }
-
-    fn trim_lines(input: String) -> String {
-        input
-            .lines()
-            .map(|line| line.trim_right())
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
-
-    pub fn prefix_each_line<S: AsRef<str>>(input: S, prefix: &str) -> String {
-        String::from(prefix) + &prefix_each_next_line(input, prefix)
-    }
-
-    pub fn prefix_each_next_line<S: AsRef<str>>(input: S, prefix: &str) -> String {
-        input.as_ref().replace("\n", &format!("\n{}", prefix))
     }
 }

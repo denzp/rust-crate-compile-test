@@ -1,20 +1,18 @@
 Compiler messages don't fulfill expectations!
 
-### Unexpected messages:
-  - file:    src/mod_2/mod.rs:1
+Unexpected messages:
+ └─ file:    src/mod_2/mod.rs:1
     message: (Error E0412) cannot find type `NonExistingType` in this scope
 
-### Missing messages:
-  - file:    src/mod_2/mod.rs:1
-    message: (Error E0433)
-
-  - file:    src/mod_2/mod.rs:6
-    message: (Note) With extra space
-
-  - file:    src/mod_2/mod.rs:6
-    message: (Help) For previous line
-
-  - file:    src/mod_1.rs:1
+Missing messages:
+ ├─ file:    src/mod_2/mod.rs:1
+ │  message: (Error E0433)
+ │
+ ├─ file:    src/mod_2/mod.rs:6
+ │  message: (Note) With extra space
+ │
+ ├─ file:    src/mod_2/mod.rs:6
+ │  message: (Help) For previous line
+ │
+ └─ file:    src/mod_1.rs:1
     message: (Warning) another warning
-
-###

@@ -46,14 +46,12 @@ impl CheckErrorsStepFactory {
         let sources = WalkDir::new(&crate_path.join("src"))
             .into_iter()
             .map(|entry| entry.unwrap())
-            .filter_map(|entry| {
-                println!("{:?}", entry);
-
-                match entry.path().extension().and_then(|item| item.to_str()) {
+            .filter_map(
+                |entry| match entry.path().extension().and_then(|item| item.to_str()) {
                     Some("rs") => Some(PathBuf::from(entry.path())),
                     _ => None,
-                }
-            });
+                },
+            );
 
         let mut messages = vec![];
 

@@ -1,0 +1,45 @@
+testing crate example/tests/build-fail/fail-2 ... OK
+testing crate example/tests/build-fail/fail-1 ... FAILED
+testing crate example/tests/build-fail/fail-3 ... FAILED
+
+example/tests/build-fail/fail-1:
+  Compiler messages don't fulfill expectations!
+
+  Unexpected messages:
+   └─ file:    src/lib.rs:12
+      message: (Error E0412) cannot find type `NonExistingType` in this scope
+
+  Missing messages:
+   ├─ file:    src/lib.rs:2
+   │  message: (Warning) another warning
+   │
+   ├─ file:    src/lib.rs:12
+   │  message: (Error E0433)
+   │
+   ├─ file:    src/lib.rs:17
+   │  message: (Note) With extra space
+   │
+   └─ file:    src/lib.rs:17
+      message: (Help) For previous line
+
+
+example/tests/build-fail/fail-3:
+  Compiler messages don't fulfill expectations!
+
+  Unexpected messages:
+   └─ file:    src/mod_2/mod.rs:1
+      message: (Error E0412) cannot find type `NonExistingType` in this scope
+
+  Missing messages:
+   ├─ file:    src/mod_2/mod.rs:1
+   │  message: (Error E0433)
+   │
+   ├─ file:    src/mod_2/mod.rs:6
+   │  message: (Note) With extra space
+   │
+   ├─ file:    src/mod_2/mod.rs:6
+   │  message: (Help) For previous line
+   │
+   └─ file:    src/mod_1.rs:1
+      message: (Warning) another warning
+

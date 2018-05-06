@@ -18,10 +18,11 @@ pub mod config;
 pub mod error;
 pub mod steps;
 
+mod formatting;
 mod plan;
 
 pub mod prelude {
     pub use config::{Config, Mode};
     pub use error::{Result, TestingError};
-    pub use plan::run_tests;
+    pub use plan::{run_tests, run_tests_with_writer};
 }

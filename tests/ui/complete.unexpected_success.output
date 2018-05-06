@@ -1,0 +1,4 @@
+testing crate example/tests/build-success/success-1 ... FAILED
+
+example/tests/build-success/success-1:
+  Expected the crate to build with error, but the build was succesful!
