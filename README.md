@@ -1,5 +1,8 @@
-# Rust Crate Compilation Testing helper
+# Rust Crate Compilation Test helper
 > Swiss army knife for `proc-macro` crates testing.
+
+[![Build Status](https://travis-ci.org/denzp/rust-crate-compile-test.svg?branch=master)](https://travis-ci.org/denzp/rust-crate-compile-test)
+[![Current Version](https://img.shields.io/crates/v/crate-compile-test.svg)](https://crates.io/crates/crate-compile-test)
 
 ## Purpose
 The library was highly inspired by [laumann/compiletest-rs](https://github.com/laumann/compiletest-rs), and it's origin [Rust's compiletest](https://github.com/rust-lang/rust/tree/master/src/tools/compiletest).
