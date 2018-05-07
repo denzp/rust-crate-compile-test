@@ -1,4 +1,4 @@
-# Rust Crates Compilation Testing helper
+# Rust Crate Compilation Testing helper
 > Swiss army knife for `proc-macro` crates testing.
 
 ## Purpose

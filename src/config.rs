@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use steps::TestStepFactory;
+
 pub enum Mode {
     BuildFail,
     BuildSuccess,
@@ -14,6 +16,8 @@ pub struct Config {
 
     pub cargo_env: Vec<(String, String)>,
     pub cargo_command: String,
+
+    pub additional_steps: Vec<Box<TestStepFactory>>,
 }
 
 impl Config {
@@ -26,6 +30,8 @@ impl Config {
 
             cargo_env: vec![],
             cargo_command: "cargo".into(),
+
+            additional_steps: vec![],
         }
     }
 

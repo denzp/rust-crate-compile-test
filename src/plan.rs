@@ -30,7 +30,7 @@ struct TestPlan {
 }
 
 impl TestPlan {
-    pub fn new(config: Config) -> Self {
+    pub fn new(mut config: Config) -> Self {
         let crates = WalkDir::new(&config.base_dir)
             .max_depth(1)
             .min_depth(1)
@@ -38,11 +38,15 @@ impl TestPlan {
             .map(|entry| entry.unwrap().path().into())
             .collect();
 
-        let steps: Vec<Box<TestStepFactory>> = match config.mode {
+        let mut steps: Vec<Box<TestStepFactory>> = match config.mode {
             Mode::BuildFail => vec![Box::new(CheckErrorsStepFactory::new())],
             Mode::BuildSuccess => vec![Box::new(BuildStepFactory::new())],
             Mode::Expand => vec![Box::new(BuildStepFactory::new())],
         };
+
+        if config.additional_steps.len() > 0 {
+            steps.append(&mut config.additional_steps);
+        }
 
         TestPlan {
             config,
