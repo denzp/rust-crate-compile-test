@@ -2,7 +2,7 @@ use failure::Error;
 use std::fmt;
 
 use formatting;
-use steps::CompilerMessage;
+use steps::check_errors::CompilerMessage;
 
 pub type Result<T> = ::std::result::Result<T, Error>;
 

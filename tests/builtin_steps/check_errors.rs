@@ -2,8 +2,10 @@ use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 
 use crate_compile_test::config::{Config, Mode};
-use crate_compile_test::steps::{
-    CheckErrorsStepFactory, CompilerMessage, DiagnosticLevel, MessageLocation, TestStepFactory,
+use crate_compile_test::steps::TestStepFactory;
+
+use crate_compile_test::steps::check_errors::{
+    CheckErrorsStepFactory, CompilerMessage, DiagnosticLevel, MessageLocation,
 };
 
 #[test]

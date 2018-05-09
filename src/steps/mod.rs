@@ -11,9 +11,5 @@ pub trait TestStep {
     fn execute(&self, config: &Config, build_path: &Path) -> Result<()>;
 }
 
-mod build;
-pub use self::build::BuildStepFactory;
-
-mod check_errors;
-pub use self::check_errors::{CheckErrorsStepFactory, CompilerMessage, DiagnosticLevel,
-                             MessageLocation};
+pub mod build;
+pub mod check_errors;

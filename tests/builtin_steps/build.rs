@@ -3,8 +3,8 @@ use std::fs::metadata;
 use std::path::Path;
 use tempfile::tempdir;
 
-use crate_compile_test::config::{Config, Mode};
-use crate_compile_test::steps::{BuildStepFactory, TestStepFactory};
+use crate_compile_test::config::{Config, Mode, Profile};
+use crate_compile_test::steps::{build::BuildStepFactory, TestStepFactory};
 
 #[test]
 fn it_should_handle_success() {
@@ -19,7 +19,7 @@ fn it_should_handle_success() {
         .expect("It should successfully build the crate");
 
     assert!(
-        metadata(output_path.as_ref().join("debug/libsuccess_1.rlib"))
+        metadata(output_path.as_ref().join("release/libsuccess_1.rlib"))
             .expect("Build output should exist")
             .is_file()
     );
@@ -105,5 +105,25 @@ fn it_should_use_target_from_config() {
         error
             .to_string()
             .contains("Could not find specification for target \"non-existing-target\"")
+    );
+}
+
+#[test]
+fn it_should_use_profile_from_config() {
+    let step = BuildStepFactory::new();
+    let output_path = tempdir().unwrap();
+
+    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
+    config.profile = Profile::Debug;
+
+    step.initialize(&config, &Path::new("example/tests/build-success/success-1"))
+        .unwrap()
+        .execute(&config, output_path.as_ref())
+        .expect("It should successfully build the crate");
+
+    assert!(
+        metadata(output_path.as_ref().join("debug/libsuccess_1.rlib"))
+            .expect("Build output should exist")
+            .is_file()
     );
 }

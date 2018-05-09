@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use super::{TestStep, TestStepFactory};
-use config::Config;
+use config::{Config, Profile};
 use error::{Result, TestingError};
 
 pub struct BuildStepFactory;
@@ -39,6 +39,10 @@ impl TestStep for BuildStep {
 
         if let Some(target) = config.target.as_ref() {
             command.args(&["--target", target]);
+        }
+
+        if config.profile == Profile::Release {
+            command.arg("--release");
         }
 
         for (key, value) in &config.cargo_env {

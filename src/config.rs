@@ -2,10 +2,17 @@ use std::path::{Path, PathBuf};
 
 use steps::TestStepFactory;
 
+#[derive(PartialEq)]
 pub enum Mode {
     BuildFail,
     BuildSuccess,
     Expand,
+}
+
+#[derive(PartialEq)]
+pub enum Profile {
+    Debug,
+    Release,
 }
 
 pub struct Config {
@@ -13,6 +20,7 @@ pub struct Config {
 
     pub base_dir: PathBuf,
     pub target: Option<String>,
+    pub profile: Profile,
 
     pub cargo_env: Vec<(String, String)>,
     pub cargo_command: String,
@@ -27,6 +35,7 @@ impl Config {
 
             base_dir: base_dir.as_ref().into(),
             target: None,
+            profile: Profile::Release,
 
             cargo_env: vec![],
             cargo_command: "cargo".into(),

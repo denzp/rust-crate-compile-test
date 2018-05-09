@@ -7,7 +7,7 @@ use walkdir::WalkDir;
 use config::{Config, Mode};
 use error::Result;
 use formatting;
-use steps::{BuildStepFactory, CheckErrorsStepFactory, TestStepFactory};
+use steps::{build::BuildStepFactory, check_errors::CheckErrorsStepFactory, TestStepFactory};
 
 lazy_static! {
     static ref TESTING_MUTEX: Mutex<()> = Mutex::new(());

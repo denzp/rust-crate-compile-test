@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use steps::{CompilerMessage, MessageLocation};
+use steps::check_errors::{CompilerMessage, MessageLocation};
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "lowercase")]
