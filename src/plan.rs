@@ -65,27 +65,39 @@ impl TestPlan {
 
         let results: Vec<_> = self.crates
             .iter()
-            .map(|ref crate_path| match self.execute_steps(&crate_path) {
-                Ok(result) => {
+            .map(|ref crate_path| {
+                if !(self.config.crates_filter)(crate_path) {
                     writeln!(
                         writer,
-                        "testing crate {} ... OK",
+                        "testing crate {} ... IGNORED",
                         crate_path.to_string_lossy()
                     )?;
 
-                    successful += 1;
-                    Ok(result)
+                    return Ok(());
                 }
 
-                Err(error) => {
-                    writeln!(
-                        writer,
-                        "testing crate {} ... FAILED",
-                        crate_path.to_string_lossy()
-                    )?;
+                match self.execute_steps(&crate_path) {
+                    Ok(result) => {
+                        writeln!(
+                            writer,
+                            "testing crate {} ... OK",
+                            crate_path.to_string_lossy()
+                        )?;
 
-                    failed += 1;
-                    Err(error)
+                        successful += 1;
+                        Ok(result)
+                    }
+
+                    Err(error) => {
+                        writeln!(
+                            writer,
+                            "testing crate {} ... FAILED",
+                            crate_path.to_string_lossy()
+                        )?;
+
+                        failed += 1;
+                        Err(error)
+                    }
                 }
             })
             .collect();

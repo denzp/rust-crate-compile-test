@@ -1,6 +1,6 @@
 [package]
 name = "crate-compile-test"
-version = "0.1.0"
+version = "0.1.1"
 description = "Crate Compilation Test helper"
 authors = ["Denys Zariaiev <denys.zariaiev@gmail.com>"]
 repository = "https://github.com/denzp/rust-crate-compile-test"

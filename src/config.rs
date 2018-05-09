@@ -25,6 +25,7 @@ pub struct Config {
     pub cargo_env: Vec<(String, String)>,
     pub cargo_command: String,
 
+    pub crates_filter: Box<Fn(&Path) -> bool>,
     pub additional_steps: Vec<Box<TestStepFactory>>,
 }
 
@@ -40,6 +41,7 @@ impl Config {
             cargo_env: vec![],
             cargo_command: "cargo".into(),
 
+            crates_filter: Box::new(|_| true),
             additional_steps: vec![],
         }
     }

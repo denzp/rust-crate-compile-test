@@ -65,6 +65,22 @@ fn it_should_report_unexpected_failure() {
     );
 }
 
+#[test]
+fn it_should_use_crates_filter() {
+    let mut actual_output_bytes: Vec<u8> = Vec::new();
+    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
+
+    config.crates_filter =
+        Box::new(|path| path != Path::new("example/tests/build-success/success-1"));
+
+    run_tests_with_writer(config, &mut actual_output_bytes).unwrap();
+
+    assert_eq!(
+        String::from_utf8_lossy(&actual_output_bytes),
+        read_output!("tests/ui/complete.filter.output")
+    );
+}
+
 struct DummyTestStepFactory;
 struct DummyTestStep {
     crate_path: PathBuf,
