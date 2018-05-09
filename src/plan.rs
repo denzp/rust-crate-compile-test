@@ -35,7 +35,9 @@ impl TestPlan {
             .max_depth(1)
             .min_depth(1)
             .into_iter()
-            .map(|entry| entry.unwrap().path().into())
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry.path().is_dir())
+            .map(|entry| entry.path().into())
             .collect();
 
         let mut steps: Vec<Box<TestStepFactory>> = match config.mode {
