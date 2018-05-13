@@ -1,6 +1,19 @@
+testing crate example/tests/build-fail/fail-4 ... FAILED
 testing crate example/tests/build-fail/fail-2 ... OK
 testing crate example/tests/build-fail/fail-1 ... FAILED
 testing crate example/tests/build-fail/fail-3 ... FAILED
+
+example/tests/build-fail/fail-4:
+  Compiler messages don't fulfill expectations!
+
+  Unexpected messages:
+   └─ file:    none
+      message: (Error) linking with `cc` failed: exit code: 1
+
+  Missing messages:
+   └─ file:    none
+      message: (Note) Regex(undefined reference to `third_external_fn')
+
 
 example/tests/build-fail/fail-1:
   Compiler messages don't fulfill expectations!

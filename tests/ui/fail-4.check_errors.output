@@ -1,0 +1,9 @@
+Compiler messages don't fulfill expectations!
+
+Unexpected messages:
+ └─ file:    none
+    message: (Error) linking with `cc` failed: exit code: 1
+
+Missing messages:
+ └─ file:    none
+    message: (Note) Regex(undefined reference to `third_external_fn')

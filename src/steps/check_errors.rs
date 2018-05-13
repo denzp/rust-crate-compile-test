@@ -22,12 +22,19 @@ pub struct MessageLocation {
     pub line: usize,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone)]
+pub enum MessageType {
+    None,
+    Text(String),
+    Regex(Regex),
+}
+
+#[derive(Debug, Clone)]
 pub struct CompilerMessage {
-    pub message: Option<String>,
+    pub message: MessageType,
     pub level: DiagnosticLevel,
     pub code: Option<String>,
-    pub location: MessageLocation,
+    pub location: Option<MessageLocation>,
 }
 
 pub struct CheckErrorsStepFactory;
@@ -76,28 +83,38 @@ impl CheckErrorsStepFactory {
             static ref ERR_CODE_REGEX: Regex = Regex::new(r"^ *E\d{4} *$").unwrap();
             static ref MESSAGE_REGEX: Regex =
                 Regex::new(r"// *~([\^]+|[\|])? +(ERROR|WARNING|NOTE|HELP) +(.+)").unwrap();
+            static ref GLOBAL_MESSAGE_REGEX: Regex =
+                Regex::new(r"// *~ +GLOBAL-(ERROR|WARNING|NOTE|HELP)-REGEX +(.+)").unwrap();
+        }
+
+        if let Some(captures) = GLOBAL_MESSAGE_REGEX.captures(line.1) {
+            let message = CompilerMessage {
+                message: MessageType::Regex(Regex::new(captures[2].trim()).unwrap()),
+
+                code: None,
+                location: None,
+                level: captures[1].into(),
+            };
+
+            messages.push(message);
         }
 
         if let Some(captures) = MESSAGE_REGEX.captures(line.1) {
             let location = match captures.get(1).map(|item| item.as_str()) {
-                Some("|") => MessageLocation {
-                    file: path.into(),
-                    line: messages
-                        .iter()
-                        .last()
-                        .map(|item| item.location.line)
-                        .unwrap_or(1),
-                },
+                Some("|") => messages
+                    .iter()
+                    .last()
+                    .and_then(|item| item.location.clone()),
 
-                None => MessageLocation {
+                None => Some(MessageLocation {
                     file: path.into(),
                     line: line.0,
-                },
+                }),
 
-                relative @ _ => MessageLocation {
+                relative @ _ => Some(MessageLocation {
                     file: path.into(),
                     line: line.0 - relative.unwrap().len(),
-                },
+                }),
             };
 
             let (message, code) = match ERR_CODE_REGEX.is_match(&captures[3]) {
@@ -106,9 +123,11 @@ impl CheckErrorsStepFactory {
             };
 
             let message = CompilerMessage {
-                message,
-                code,
+                message: message
+                    .map(|item| MessageType::Text(item))
+                    .unwrap_or(MessageType::None),
 
+                code,
                 location,
                 level: captures[2].into(),
             };
@@ -159,7 +178,15 @@ impl CheckErrorsStep {
 
             match (message.reason.as_str(), message.message) {
                 ("compiler-message", Some(message)) => {
-                    if message.spans.len() > 0 && message.level != DiagnosticLevel::Empty {
+                    if message.spans.len() == 0 {
+                        for child in &message.children {
+                            actual_messages.push(child.clone().into());
+                        }
+                    }
+
+                    if !message.message.starts_with("aborting")
+                        && message.level != DiagnosticLevel::Empty
+                    {
                         actual_messages.push(message.into());
                     }
                 }
@@ -229,7 +256,14 @@ impl cmp::PartialEq for CompilerMessage {
         }
 
         match (&self.message, &other.message) {
-            (Some(ref lhs), Some(ref rhs)) => lhs == rhs,
+            (MessageType::Text(ref lhs), MessageType::Text(ref rhs)) => lhs == rhs,
+
+            (MessageType::Text(ref lhs), MessageType::Regex(ref rhs)) => rhs.is_match(lhs),
+            (MessageType::Regex(ref lhs), MessageType::Text(ref rhs)) => lhs.is_match(rhs),
+
+            (MessageType::Regex(ref lhs), MessageType::Regex(ref rhs)) => {
+                lhs.as_str() == rhs.as_str()
+            }
 
             _ => false,
         }
@@ -238,11 +272,20 @@ impl cmp::PartialEq for CompilerMessage {
 
 impl fmt::Display for CompilerMessage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&format!(
-            "file:    {}:{}\n",
-            &self.location.file.to_string_lossy(),
-            self.location.line
-        ))?;
+        match self.location {
+            Some(ref location) => {
+                writeln!(
+                    f,
+                    "file:    {}:{}",
+                    &location.file.to_string_lossy(),
+                    location.line
+                )?;
+            }
+
+            None => {
+                writeln!(f, "file:    none",)?;
+            }
+        };
 
         f.write_str("message: ")?;
         f.write_str(&match self.code {
@@ -250,8 +293,11 @@ impl fmt::Display for CompilerMessage {
             None => format!("({:?}) ", self.level),
         })?;
 
-        if let Some(ref message) = self.message {
-            f.write_str(&message)?;
+        match self.message {
+            MessageType::Text(ref message) => write!(f, "{}", message)?,
+            MessageType::Regex(ref expr) => write!(f, "Regex({})", expr.as_str())?,
+
+            _ => {}
         }
 
         Ok(())

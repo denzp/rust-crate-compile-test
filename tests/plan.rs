@@ -55,7 +55,9 @@ fn it_should_report_success() {
 #[test]
 fn it_should_report_unexpected_failure() {
     let mut actual_output_bytes: Vec<u8> = Vec::new();
-    let config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
+    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
+
+    config.crates_filter = Box::new(|path| path != Path::new("example/tests/build-fail/fail-4"));
 
     run_tests_with_writer(config, &mut actual_output_bytes).unwrap_err();
 

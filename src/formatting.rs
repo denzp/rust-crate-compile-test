@@ -4,11 +4,11 @@ use std::iter::repeat;
 pub fn display_list<T: fmt::Display>(list: &Vec<T>) -> String {
     match list.len() {
         0 => "".into(),
-        1 => {
+        1 => trim_lines(
             String::from(" └─ ")
                 + &prefix_each_next_line(list.iter().last().unwrap().to_string(), "    ")
-                + "\n"
-        }
+                + "\n",
+        ),
         _ => trim_lines(
             String::from(" ├─ ")
                 + &list.iter()

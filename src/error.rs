@@ -61,7 +61,7 @@ impl fmt::Display for TestingError {
             } => ErrorDisplay {
                 header: "Compiler messages don't fulfill expectations!",
                 content: Some(format!(
-                    "Unexpected messages:\n{}\nMissing messages:\n{}\n",
+                    "Unexpected messages:\n{}\n\nMissing messages:\n{}\n",
                     formatting::display_list(unexpected),
                     formatting::display_list(missing)
                 )),

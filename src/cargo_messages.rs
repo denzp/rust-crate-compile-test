@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use steps::check_errors::{CompilerMessage, MessageLocation};
+use steps::check_errors::{CompilerMessage, MessageLocation, MessageType};
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -20,15 +20,16 @@ pub struct Diagnostic {
     pub reason: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct DiagnosticMessage {
     pub message: String,
     pub level: DiagnosticLevel,
     pub code: Option<DiagnosticCode>,
     pub spans: Vec<DiagnosticSpan>,
+    pub children: Vec<DiagnosticMessage>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct DiagnosticSpan {
     pub file_name: String,
     pub line_start: usize,
@@ -65,20 +66,20 @@ impl<'a> From<&'a str> for DiagnosticLevel {
 
 impl Into<CompilerMessage> for DiagnosticMessage {
     fn into(self) -> CompilerMessage {
-        let span = self.spans
+        let location = self.spans
             .into_iter()
             .filter(|item| item.is_primary)
             .nth(0)
-            .unwrap_or_default();
-
-        CompilerMessage {
-            message: Some(self.message),
-            level: self.level,
-            code: self.code.map(|item| item.code),
-            location: MessageLocation {
+            .map(|span| MessageLocation {
                 file: PathBuf::from(span.file_name),
                 line: span.line_start,
-            },
+            });
+
+        CompilerMessage {
+            message: MessageType::Text(self.message),
+            level: self.level,
+            code: self.code.map(|item| item.code),
+            location,
         }
     }
 }

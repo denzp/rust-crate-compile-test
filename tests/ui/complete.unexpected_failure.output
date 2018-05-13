@@ -1,3 +1,4 @@
+testing crate example/tests/build-fail/fail-4 ... IGNORED
 testing crate example/tests/build-fail/fail-2 ... FAILED
 testing crate example/tests/build-fail/fail-1 ... FAILED
 testing crate example/tests/build-fail/fail-3 ... FAILED
