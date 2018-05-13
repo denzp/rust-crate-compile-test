@@ -24,12 +24,16 @@ pub fn display_list<T: fmt::Display>(list: &Vec<T>) -> String {
 
 pub fn display_block<S1: AsRef<str>, S2: AsRef<str>>(header: S1, body: S2) -> String {
     format!(
-        " {}\n╭{}\n{}\n╰",
+        "┍{3}┑\n│ {0} │\n┕{3}┙\n{2}\n┍{4}┑\n│ {1} │\n┕{4}┙",
         header.as_ref(),
-        repeat("─")
-            .take(header.as_ref().len())
+        String::from("end ") + header.as_ref(),
+        trim_lines(prefix_each_line(body, "  ")).trim_right(),
+        repeat("━")
+            .take(header.as_ref().len() + 2)
             .collect::<String>(),
-        trim_lines(prefix_each_line(body, "│ ")).trim_right()
+        repeat("━")
+            .take(header.as_ref().len() + 6)
+            .collect::<String>(),
     )
 }
 

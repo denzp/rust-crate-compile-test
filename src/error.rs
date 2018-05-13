@@ -44,11 +44,11 @@ impl fmt::Display for TestingError {
                     let mut output = String::new();
 
                     if stdout.len() > 0 {
-                        output += &format!("{}\n", formatting::display_block("stdout:", stdout));
+                        output += &format!("{}\n", formatting::display_block("stdout", stdout));
                     }
 
                     if stderr.len() > 0 {
-                        output += &format!("{}", formatting::display_block("stderr:", stderr));
+                        output += &format!("{}", formatting::display_block("stderr", stderr));
                     }
 
                     output
