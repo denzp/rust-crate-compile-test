@@ -4,4 +4,8 @@ version = "0.1.0"
 authors = ["Denys Zariaiev <denys.zariaiev@gmail.com>"]
 
 [dev-dependencies]
-crate-compile-test = "0.1"
+crate-compile-test = { path = ".." }
+
+[[test]]
+name = "run_compile_tests"
+harness = false

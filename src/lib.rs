@@ -19,6 +19,7 @@ pub mod steps;
 
 mod cargo_messages;
 mod formatting;
+mod harness;
 mod plan;
 
 pub mod prelude {
