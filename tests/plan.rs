@@ -5,6 +5,7 @@ extern crate pretty_assertions;
 
 #[macro_use]
 extern crate failure;
+extern crate colored;
 
 #[macro_use]
 mod utils;
@@ -15,6 +16,8 @@ use crate_compile_test::steps::{TestStep, TestStepFactory};
 
 #[test]
 fn it_should_report_failure() {
+    colored::control::set_override(false);
+
     let mut actual_output_bytes: Vec<u8> = Vec::new();
 
     let result = {
@@ -36,6 +39,8 @@ fn it_should_report_failure() {
 
 #[test]
 fn it_should_report_about_unexpected_success() {
+    colored::control::set_override(false);
+
     let mut actual_output_bytes: Vec<u8> = Vec::new();
 
     let result = {
@@ -57,6 +62,8 @@ fn it_should_report_about_unexpected_success() {
 
 #[test]
 fn it_should_report_success() {
+    colored::control::set_override(false);
+
     let mut actual_output_bytes: Vec<u8> = Vec::new();
 
     let result = {
@@ -78,6 +85,8 @@ fn it_should_report_success() {
 
 #[test]
 fn it_should_report_unexpected_failure() {
+    colored::control::set_override(false);
+
     let mut actual_output_bytes: Vec<u8> = Vec::new();
 
     let result = {
@@ -104,6 +113,8 @@ fn it_should_report_unexpected_failure() {
 
 #[test]
 fn it_should_use_crates_filter() {
+    colored::control::set_override(false);
+
     let mut actual_output_bytes: Vec<u8> = Vec::new();
 
     let result = {
@@ -152,6 +163,8 @@ impl TestStep for DummyTestStep {
 
 #[test]
 fn it_should_run_additional_steps() {
+    colored::control::set_override(false);
+
     let mut actual_output_bytes: Vec<u8> = Vec::new();
 
     let result = {
@@ -179,6 +192,8 @@ fn it_should_run_additional_steps() {
 
 #[test]
 fn it_should_report_multiple_tests() {
+    colored::control::set_override(false);
+
     let mut actual_output_bytes: Vec<u8> = Vec::new();
 
     let result = {

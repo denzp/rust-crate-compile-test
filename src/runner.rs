@@ -1,6 +1,7 @@
 use std::io::Write;
 use std::sync::Mutex;
 
+use colored::*;
 use failure::Error;
 
 use config::Config;
@@ -42,7 +43,11 @@ impl<'a> TestRunner<'a> {
         let mut overall_ignored: usize = 0;
 
         for test in &self.tests {
-            writeln!(self.output.lock().unwrap(), "Running `{}`...", test.name)?;
+            writeln!(
+                self.output.lock().unwrap(),
+                "{}",
+                format!(r#"Running "{}""#, test.name).underline()
+            )?;
 
             let plan = TestPlan::new((test.config)());
 
@@ -56,8 +61,9 @@ impl<'a> TestRunner<'a> {
                     if plan.is_crate_filtered_out(crate_path) {
                         writeln!(
                             self.output.lock().unwrap(),
-                            "  testing crate {} ... IGNORED",
-                            crate_path.to_string_lossy()
+                            "  testing crate {} ... {}",
+                            crate_path.to_string_lossy().bold(),
+                            "IGNORED".yellow(),
                         )?;
 
                         ignored += 1;
@@ -68,8 +74,9 @@ impl<'a> TestRunner<'a> {
                         Ok(()) => {
                             writeln!(
                                 self.output.lock().unwrap(),
-                                "  testing crate {} ... OK",
-                                crate_path.to_string_lossy()
+                                "  testing crate {} ... {}",
+                                crate_path.to_string_lossy().bold(),
+                                "OK".bright_green(),
                             )?;
 
                             successful += 1;
@@ -79,8 +86,9 @@ impl<'a> TestRunner<'a> {
                         Err(error) => {
                             writeln!(
                                 self.output.lock().unwrap(),
-                                "  testing crate {} ... FAILED",
-                                crate_path.to_string_lossy()
+                                "  testing crate {} ... {}",
+                                crate_path.to_string_lossy().bold(),
+                                "FAILED".red()
                             )?;
 
                             failed += 1;
@@ -108,9 +116,9 @@ impl<'a> TestRunner<'a> {
         writeln!(
             self.output.lock().unwrap(),
             "Summary: {} successful, {} failed, {} ignored.",
-            overall_successful,
-            overall_failed,
-            overall_ignored,
+            overall_successful.to_string().bright_green(),
+            overall_failed.to_string().red(),
+            overall_ignored.to_string().yellow(),
         )?;
 
         Ok(TestResult {

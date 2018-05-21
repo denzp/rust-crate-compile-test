@@ -1,4 +1,4 @@
-Running `failure`...
+Running "failure"
   testing crate example/tests/build-fail/fail-4 ... FAILED
   testing crate example/tests/build-fail/fail-2 ... OK
   testing crate example/tests/build-fail/fail-1 ... FAILED

@@ -7,6 +7,7 @@ extern crate serde_derive;
 #[macro_use]
 extern crate lazy_static;
 
+extern crate colored;
 extern crate regex;
 extern crate serde;
 extern crate serde_json;

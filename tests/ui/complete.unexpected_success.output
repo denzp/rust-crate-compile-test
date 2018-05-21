@@ -1,4 +1,4 @@
-Running `unexpected success`...
+Running "unexpected success"
   testing crate example/tests/build-success/success-1 ... FAILED
 
 example/tests/build-success/success-1 failed:

@@ -1,10 +1,10 @@
-Running `unexpected success`...
+Running "unexpected success"
   testing crate example/tests/build-success/success-1 ... FAILED
 
 example/tests/build-success/success-1 failed:
   Unexpectedly successful build!
 
-Running `failure`...
+Running "failure"
   testing crate example/tests/build-fail/fail-4 ... FAILED
   testing crate example/tests/build-fail/fail-2 ... OK
   testing crate example/tests/build-fail/fail-1 ... FAILED

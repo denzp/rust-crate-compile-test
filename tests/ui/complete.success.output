@@ -1,4 +1,4 @@
-Running `success`...
+Running "success"
   testing crate example/tests/build-success/success-1 ... OK
 
 Summary: 1 successful, 0 failed, 0 ignored.

@@ -1,4 +1,4 @@
-Running `filters`...
+Running "filters"
   testing crate example/tests/build-success/success-1 ... IGNORED
 
 Summary: 0 successful, 0 failed, 1 ignored.

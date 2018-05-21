@@ -1,6 +1,8 @@
-use failure::Error;
 use std::fmt;
 use std::path::PathBuf;
+
+use colored::*;
+use failure::Error;
 
 use formatting;
 use steps::check_errors::CompilerMessage;
@@ -45,7 +47,7 @@ impl fmt::Display for TestingError {
             },
 
             TestingError::TestFailed { path, error } => ErrorDisplay {
-                header: format!("{} failed:", path.to_string_lossy()),
+                header: format!("{} failed:", path.to_string_lossy().bold().red()),
                 content: Some(formatting::prefix_each_line(error.to_string(), "  ")),
             },
 
