@@ -1,3 +1,9 @@
+Running `unexpected success`...
+  testing crate example/tests/build-success/success-1 ... FAILED
+
+example/tests/build-success/success-1 failed:
+  Unexpectedly successful build!
+
 Running `failure`...
   testing crate example/tests/build-fail/fail-4 ... FAILED
   testing crate example/tests/build-fail/fail-2 ... OK
@@ -55,4 +61,4 @@ example/tests/build-fail/fail-3 failed:
    └─ file:    src/mod_1.rs:1
       message: (Warning) another warning
 
-Summary: 1 successful, 3 failed, 0 ignored.
+Summary: 1 successful, 4 failed, 0 ignored.

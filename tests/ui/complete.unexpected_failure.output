@@ -1,9 +1,10 @@
-testing crate example/tests/build-fail/fail-4 ... IGNORED
-testing crate example/tests/build-fail/fail-2 ... FAILED
-testing crate example/tests/build-fail/fail-1 ... FAILED
-testing crate example/tests/build-fail/fail-3 ... FAILED
+Running `unexpected failure`...
+  testing crate example/tests/build-fail/fail-4 ... IGNORED
+  testing crate example/tests/build-fail/fail-2 ... FAILED
+  testing crate example/tests/build-fail/fail-1 ... FAILED
+  testing crate example/tests/build-fail/fail-3 ... FAILED
 
-example/tests/build-fail/fail-2:
+example/tests/build-fail/fail-2 failed:
   Unable to build the crate!
 
   ┍━━━━━━━━┑
@@ -33,7 +34,7 @@ example/tests/build-fail/fail-2:
   │ end stderr │
   ┕━━━━━━━━━━━━┙
 
-example/tests/build-fail/fail-1:
+example/tests/build-fail/fail-1 failed:
   Unable to build the crate!
 
   ┍━━━━━━━━┑
@@ -63,7 +64,7 @@ example/tests/build-fail/fail-1:
   │ end stderr │
   ┕━━━━━━━━━━━━┙
 
-example/tests/build-fail/fail-3:
+example/tests/build-fail/fail-3 failed:
   Unable to build the crate!
 
   ┍━━━━━━━━┑
@@ -113,3 +114,5 @@ example/tests/build-fail/fail-3:
   ┍━━━━━━━━━━━━┑
   │ end stderr │
   ┕━━━━━━━━━━━━┙
+
+Summary: 0 successful, 3 failed, 1 ignored.

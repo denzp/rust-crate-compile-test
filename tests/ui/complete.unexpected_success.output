@@ -1,4 +1,7 @@
-testing crate example/tests/build-success/success-1 ... FAILED
+Running `unexpected success`...
+  testing crate example/tests/build-success/success-1 ... FAILED
 
-example/tests/build-success/success-1:
-  Expected the crate to build with error, but the build was succesful!
+example/tests/build-success/success-1 failed:
+  Unexpectedly successful build!
+
+Summary: 0 successful, 1 failed, 0 ignored.

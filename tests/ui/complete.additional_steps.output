@@ -1,4 +1,7 @@
-testing crate example/tests/build-success/success-1 ... FAILED
+Running `additional steps`...
+  testing crate example/tests/build-success/success-1 ... FAILED
 
-example/tests/build-success/success-1:
+example/tests/build-success/success-1 failed:
   dummy additional step failed on crate `example/tests/build-success/success-1`
+
+Summary: 0 successful, 1 failed, 0 ignored.

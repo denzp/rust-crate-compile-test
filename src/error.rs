@@ -1,5 +1,6 @@
 use failure::Error;
 use std::fmt;
+use std::path::PathBuf;
 
 use formatting;
 use steps::check_errors::CompilerMessage;
@@ -19,6 +20,11 @@ pub enum TestingError {
         unexpected: Vec<CompilerMessage>,
         missing: Vec<CompilerMessage>,
     },
+
+    TestFailed {
+        path: PathBuf,
+        error: Error,
+    },
 }
 
 struct ErrorDisplay<S1, S2>
@@ -34,21 +40,26 @@ impl fmt::Display for TestingError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let display = match self {
             TestingError::UnexpectedBuildSuccess => ErrorDisplay {
-                header: "Expected the crate to build with error, but the build was succesful!",
+                header: "Unexpectedly successful build!".into(),
                 content: None,
             },
 
+            TestingError::TestFailed { path, error } => ErrorDisplay {
+                header: format!("{} failed:", path.to_string_lossy()),
+                content: Some(formatting::prefix_each_line(error.to_string(), "  ")),
+            },
+
             TestingError::CrateBuildFailed { stdout, stderr } => ErrorDisplay {
-                header: "Unable to build the crate!",
+                header: "Unable to build the crate!".into(),
                 content: Some({
                     let mut output = String::new();
 
                     if stdout.len() > 0 {
-                        output += &format!("{}\n", formatting::display_block("stdout", stdout));
+                        output += &format!("\n{}", formatting::display_block("stdout", stdout));
                     }
 
                     if stderr.len() > 0 {
-                        output += &format!("{}", formatting::display_block("stderr", stderr));
+                        output += &format!("\n{}", formatting::display_block("stderr", stderr));
                     }
 
                     output
@@ -59,9 +70,9 @@ impl fmt::Display for TestingError {
                 unexpected,
                 missing,
             } => ErrorDisplay {
-                header: "Compiler messages don't fulfill expectations!",
+                header: "Compiler messages don't fulfill expectations!".into(),
                 content: Some(format!(
-                    "Unexpected messages:\n{}\n\nMissing messages:\n{}\n",
+                    "\nUnexpected messages:\n{}\n\nMissing messages:\n{}",
                     formatting::display_list(unexpected),
                     formatting::display_list(missing)
                 )),
@@ -81,7 +92,7 @@ where
         write!(f, "{}", self.header.as_ref())?;
 
         if let Some(ref content) = self.content {
-            write!(f, "\n\n{}", content.as_ref())?;
+            write!(f, "\n{}", content.as_ref())?;
         }
 
         Ok(())

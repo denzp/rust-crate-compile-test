@@ -16,10 +16,18 @@ use crate_compile_test::steps::{TestStep, TestStepFactory};
 #[test]
 fn it_should_report_failure() {
     let mut actual_output_bytes: Vec<u8> = Vec::new();
-    let config = Config::new(Mode::BuildFail, "example/tests/build-fail");
 
-    run_tests_with_writer(config, &mut actual_output_bytes).unwrap_err();
+    let result = {
+        let mut runner = TestRunner::new(&mut actual_output_bytes);
 
+        runner.add("failure", || {
+            Config::new(Mode::BuildFail, "example/tests/build-fail")
+        });
+
+        runner.start().unwrap()
+    };
+
+    assert_eq!(result.is_success(), false);
     assert_eq!(
         String::from_utf8_lossy(&actual_output_bytes),
         read_output!("tests/ui/complete.failure.output")
@@ -29,10 +37,18 @@ fn it_should_report_failure() {
 #[test]
 fn it_should_report_about_unexpected_success() {
     let mut actual_output_bytes: Vec<u8> = Vec::new();
-    let config = Config::new(Mode::BuildFail, "example/tests/build-success");
 
-    run_tests_with_writer(config, &mut actual_output_bytes).unwrap_err();
+    let result = {
+        let mut runner = TestRunner::new(&mut actual_output_bytes);
 
+        runner.add("unexpected success", || {
+            Config::new(Mode::BuildFail, "example/tests/build-success")
+        });
+
+        runner.start().unwrap()
+    };
+
+    assert_eq!(result.is_success(), false);
     assert_eq!(
         String::from_utf8_lossy(&actual_output_bytes),
         read_output!("tests/ui/complete.unexpected_success.output")
@@ -42,10 +58,18 @@ fn it_should_report_about_unexpected_success() {
 #[test]
 fn it_should_report_success() {
     let mut actual_output_bytes: Vec<u8> = Vec::new();
-    let config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
 
-    run_tests_with_writer(config, &mut actual_output_bytes).unwrap();
+    let result = {
+        let mut runner = TestRunner::new(&mut actual_output_bytes);
 
+        runner.add("success", || {
+            Config::new(Mode::BuildSuccess, "example/tests/build-success")
+        });
+
+        runner.start().unwrap()
+    };
+
+    assert_eq!(result.is_success(), true);
     assert_eq!(
         String::from_utf8_lossy(&actual_output_bytes),
         read_output!("tests/ui/complete.success.output")
@@ -55,12 +79,23 @@ fn it_should_report_success() {
 #[test]
 fn it_should_report_unexpected_failure() {
     let mut actual_output_bytes: Vec<u8> = Vec::new();
-    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
 
-    config.crates_filter = Box::new(|path| path != Path::new("example/tests/build-fail/fail-4"));
+    let result = {
+        let mut runner = TestRunner::new(&mut actual_output_bytes);
 
-    run_tests_with_writer(config, &mut actual_output_bytes).unwrap_err();
+        runner.add("unexpected failure", || {
+            let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-fail");
 
+            config.crates_filter =
+                Box::new(|path| path != Path::new("example/tests/build-fail/fail-4"));
+
+            config
+        });
+
+        runner.start().unwrap()
+    };
+
+    assert_eq!(result.is_success(), false);
     assert_eq!(
         String::from_utf8_lossy(&actual_output_bytes),
         read_output!("tests/ui/complete.unexpected_failure.output")
@@ -70,13 +105,23 @@ fn it_should_report_unexpected_failure() {
 #[test]
 fn it_should_use_crates_filter() {
     let mut actual_output_bytes: Vec<u8> = Vec::new();
-    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
 
-    config.crates_filter =
-        Box::new(|path| path != Path::new("example/tests/build-success/success-1"));
+    let result = {
+        let mut runner = TestRunner::new(&mut actual_output_bytes);
 
-    run_tests_with_writer(config, &mut actual_output_bytes).unwrap();
+        runner.add("filters", || {
+            let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
 
+            config.crates_filter =
+                Box::new(|path| path != Path::new("example/tests/build-success/success-1"));
+
+            config
+        });
+
+        runner.start().unwrap()
+    };
+
+    assert_eq!(result.is_success(), true);
     assert_eq!(
         String::from_utf8_lossy(&actual_output_bytes),
         read_output!("tests/ui/complete.filter.output")
@@ -108,16 +153,51 @@ impl TestStep for DummyTestStep {
 #[test]
 fn it_should_run_additional_steps() {
     let mut actual_output_bytes: Vec<u8> = Vec::new();
-    let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
 
-    config
-        .additional_steps
-        .push(Box::new(DummyTestStepFactory {}));
+    let result = {
+        let mut runner = TestRunner::new(&mut actual_output_bytes);
 
-    run_tests_with_writer(config, &mut actual_output_bytes).unwrap_err();
+        runner.add("additional steps", || {
+            let mut config = Config::new(Mode::BuildSuccess, "example/tests/build-success");
 
+            config
+                .additional_steps
+                .push(Box::new(DummyTestStepFactory {}));
+
+            config
+        });
+
+        runner.start().unwrap()
+    };
+
+    assert_eq!(result.is_success(), false);
     assert_eq!(
         String::from_utf8_lossy(&actual_output_bytes),
         read_output!("tests/ui/complete.additional_steps.output")
+    );
+}
+
+#[test]
+fn it_should_report_multiple_tests() {
+    let mut actual_output_bytes: Vec<u8> = Vec::new();
+
+    let result = {
+        let mut runner = TestRunner::new(&mut actual_output_bytes);
+
+        runner.add("unexpected success", || {
+            Config::new(Mode::BuildFail, "example/tests/build-success")
+        });
+
+        runner.add("failure", || {
+            Config::new(Mode::BuildFail, "example/tests/build-fail")
+        });
+
+        runner.start().unwrap()
+    };
+
+    assert_eq!(result.is_success(), false);
+    assert_eq!(
+        String::from_utf8_lossy(&actual_output_bytes),
+        read_output!("tests/ui/complete.multiple.output")
     );
 }

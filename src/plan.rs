@@ -1,29 +1,12 @@
-use std::io::{stderr, Write};
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 use tempfile::tempdir;
 use walkdir::WalkDir;
 
 use config::{Config, Mode};
 use error::Result;
-use formatting;
 use steps::{build::BuildStepFactory, check_errors::CheckErrorsStepFactory, TestStepFactory};
 
-lazy_static! {
-    static ref TESTING_MUTEX: Mutex<()> = Mutex::new(());
-}
-
-pub fn run_tests(config: Config) {
-    if let Err(error) = run_tests_with_writer(config, stderr()) {
-        panic!("{}", error);
-    }
-}
-
-pub fn run_tests_with_writer<W: Write>(config: Config, writer: W) -> Result<()> {
-    TestPlan::new(config).execute(writer)
-}
-
-struct TestPlan {
+pub struct TestPlan {
     config: Config,
     steps: Vec<Box<TestStepFactory>>,
     crates: Vec<PathBuf>,
@@ -57,71 +40,15 @@ impl TestPlan {
         }
     }
 
-    pub fn execute<W: Write>(self, mut writer: W) -> Result<()> {
-        let _lock = TESTING_MUTEX.lock().unwrap();
-
-        let mut successful: usize = 0;
-        let mut failed: usize = 0;
-
-        let results: Vec<_> = self.crates
-            .iter()
-            .map(|ref crate_path| {
-                if !(self.config.crates_filter)(crate_path) {
-                    writeln!(
-                        writer,
-                        "testing crate {} ... IGNORED",
-                        crate_path.to_string_lossy()
-                    )?;
-
-                    return Ok(());
-                }
-
-                match self.execute_steps(&crate_path) {
-                    Ok(result) => {
-                        writeln!(
-                            writer,
-                            "testing crate {} ... OK",
-                            crate_path.to_string_lossy()
-                        )?;
-
-                        successful += 1;
-                        Ok(result)
-                    }
-
-                    Err(error) => {
-                        writeln!(
-                            writer,
-                            "testing crate {} ... FAILED",
-                            crate_path.to_string_lossy()
-                        )?;
-
-                        failed += 1;
-                        Err(error)
-                    }
-                }
-            })
-            .collect();
-
-        for result in self.crates.iter().zip(results) {
-            if let Err(error) = result.1 {
-                writeln!(writer, "\n{}:", result.0.to_string_lossy())?;
-
-                writeln!(
-                    writer,
-                    "{}",
-                    formatting::prefix_each_line(error.to_string(), "  ")
-                )?;
-            }
-        }
-
-        if failed > 0 {
-            bail!("{} tests failed", failed);
-        } else {
-            Ok(())
-        }
+    pub fn crates(&self) -> &[PathBuf] {
+        &self.crates
     }
 
-    fn execute_steps(&self, crate_path: &Path) -> Result<()> {
+    pub fn is_crate_filtered_out(&self, crate_path: &Path) -> bool {
+        (self.config.crates_filter)(crate_path) == false
+    }
+
+    pub fn execute_steps(&self, crate_path: &Path) -> Result<()> {
         let build_path = tempdir()?;
 
         let local_steps: Vec<_> = self.steps

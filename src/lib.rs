@@ -19,11 +19,30 @@ pub mod steps;
 
 mod cargo_messages;
 mod formatting;
-mod harness;
 mod plan;
+mod runner;
 
 pub mod prelude {
     pub use config::{Config, Mode, Profile};
     pub use error::{Result, TestingError};
-    pub use plan::{run_tests, run_tests_with_writer};
+    pub use runner::TestRunner;
+}
+
+#[macro_export]
+macro_rules! bootstrap_compilation_tests {
+    ($($name:ident),+) => {
+        fn main() {
+            use std::process::exit;
+            use std::io::stdout;
+
+            let mut output = stdout();
+            let mut runner = TestRunner::new(&mut output);
+
+            $($name(&mut runner);)+
+
+            if !runner.start().unwrap().is_success() {
+                exit(1);
+            }
+        }
+    };
 }

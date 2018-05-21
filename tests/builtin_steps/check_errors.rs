@@ -25,10 +25,7 @@ fn it_should_handle_success() {
             .expect_err("It should throw error")
     };
 
-    assert_eq!(
-        error.to_string(),
-        "Expected the crate to build with error, but the build was succesful!"
-    );
+    assert_eq!(error.to_string(), "Unexpectedly successful build!");
 }
 
 #[test]
