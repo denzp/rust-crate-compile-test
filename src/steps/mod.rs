@@ -13,3 +13,4 @@ pub trait TestStep {
 
 pub mod build;
 pub mod check_errors;
+pub mod check_expansion;
