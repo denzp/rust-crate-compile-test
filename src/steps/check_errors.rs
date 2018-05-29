@@ -3,16 +3,14 @@ use regex::Regex;
 use serde_json as json;
 use std::cmp;
 use std::fmt;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use walkdir::WalkDir;
 
 use super::{TestStep, TestStepFactory};
 use cargo_messages;
 use config::{Config, Profile};
 use error::{Result, TestingError};
+use utils::SourceCodeAnalyser;
 
 pub use cargo_messages::DiagnosticLevel;
 
@@ -48,37 +46,14 @@ impl CheckErrorsStepFactory {
     pub fn new() -> Self {
         CheckErrorsStepFactory {}
     }
+}
 
-    pub fn collect_crate_messages(crate_path: &Path) -> Result<Vec<CompilerMessage>> {
-        let sources = WalkDir::new(&crate_path.join("src"))
-            .into_iter()
-            .map(|entry| entry.unwrap())
-            .filter_map(
-                |entry| match entry.path().extension().and_then(|item| item.to_str()) {
-                    Some("rs") => Some(PathBuf::from(entry.path())),
-                    _ => None,
-                },
-            );
-
-        let mut messages = vec![];
-
-        for path in sources {
-            let source_path = path.strip_prefix(crate_path)?;
-            let source_file = BufReader::new({
-                File::open(&path).context(format!("Unable to open source at {:?}", path))?
-            });
-
-            source_file.lines().fold(1, |line_num, line| {
-                Self::analyse_source_line(&source_path, (line_num, &line.unwrap()), &mut messages);
-
-                line_num + 1
-            });
-        }
-
-        Ok(messages)
-    }
-
-    fn analyse_source_line(path: &Path, line: (usize, &str), messages: &mut Vec<CompilerMessage>) {
+impl SourceCodeAnalyser<CompilerMessage> for CheckErrorsStepFactory {
+    fn analyse_source_line(
+        previous: &[CompilerMessage],
+        path: &Path,
+        line: (usize, &str),
+    ) -> Result<Option<CompilerMessage>> {
         lazy_static! {
             static ref ERR_CODE_REGEX: Regex = Regex::new(r"^ *E\d{4} *$").unwrap();
             static ref MESSAGE_REGEX: Regex =
@@ -96,12 +71,12 @@ impl CheckErrorsStepFactory {
                 level: captures[1].into(),
             };
 
-            messages.push(message);
+            return Ok(Some(message));
         }
 
         if let Some(captures) = MESSAGE_REGEX.captures(line.1) {
             let location = match captures.get(1).map(|item| item.as_str()) {
-                Some("|") => messages
+                Some("|") => previous
                     .iter()
                     .last()
                     .and_then(|item| item.location.clone()),
@@ -132,7 +107,9 @@ impl CheckErrorsStepFactory {
                 level: captures[2].into(),
             };
 
-            messages.push(message);
+            Ok(Some(message))
+        } else {
+            Ok(None)
         }
     }
 }
@@ -213,7 +190,7 @@ impl TestStepFactory for CheckErrorsStepFactory {
     fn initialize(&self, _config: &Config, crate_path: &Path) -> Result<Box<TestStep>> {
         Ok(Box::new(CheckErrorsStep::new(
             crate_path.into(),
-            Self::collect_crate_messages(crate_path)?,
+            Self::analyse_crate(crate_path)?,
         )))
     }
 }

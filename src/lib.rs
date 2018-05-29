@@ -17,6 +17,7 @@ extern crate walkdir;
 pub mod config;
 pub mod error;
 pub mod steps;
+pub mod utils;
 
 mod cargo_messages;
 mod formatting;

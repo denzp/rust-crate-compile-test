@@ -1,11 +1,12 @@
 use std::path::Path;
 
 use crate_compile_test::steps::check_expansion::{CheckExpansionStepFactory, ExpectedExpansion};
+use crate_compile_test::utils::SourceCodeAnalyser;
 
 #[test]
 fn it_should_collect_expected_expansions() {
     let crate_path = Path::new("example/tests/expand/expand-1");
-    let messages = CheckExpansionStepFactory::collect_expectations(&crate_path).unwrap();
+    let messages = CheckExpansionStepFactory::analyse_crate(&crate_path).unwrap();
 
     assert_eq!(
         messages,

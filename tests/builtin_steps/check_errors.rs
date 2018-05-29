@@ -4,6 +4,7 @@ use tempfile::tempdir;
 
 use crate_compile_test::config::{Config, Mode};
 use crate_compile_test::steps::TestStepFactory;
+use crate_compile_test::utils::SourceCodeAnalyser;
 
 use crate_compile_test::steps::check_errors::{
     CheckErrorsStepFactory, CompilerMessage, DiagnosticLevel, MessageLocation, MessageType,
@@ -64,7 +65,7 @@ fn it_should_handle_all_matched_messages() {
 #[test]
 fn it_should_collect_expected_messages() {
     let crate_path = Path::new("example/tests/build-fail/fail-1");
-    let messages = CheckErrorsStepFactory::collect_crate_messages(&crate_path).unwrap();
+    let messages = CheckErrorsStepFactory::analyse_crate(&crate_path).unwrap();
 
     assert_eq!(
         messages,
@@ -156,7 +157,7 @@ fn it_should_handle_nested_sources() {
 #[test]
 fn it_should_collect_messages_from_nested_sources() {
     let crate_path = Path::new("example/tests/build-fail/fail-3");
-    let messages = CheckErrorsStepFactory::collect_crate_messages(&crate_path).unwrap();
+    let messages = CheckErrorsStepFactory::analyse_crate(&crate_path).unwrap();
 
     assert_eq!(
         messages,
@@ -307,7 +308,7 @@ fn it_should_use_target_from_config() {
 #[test]
 fn it_should_collect_global_messages() {
     let crate_path = Path::new("example/tests/build-fail/fail-4");
-    let messages = CheckErrorsStepFactory::collect_crate_messages(&crate_path).unwrap();
+    let messages = CheckErrorsStepFactory::analyse_crate(&crate_path).unwrap();
 
     assert_eq!(
         messages,
