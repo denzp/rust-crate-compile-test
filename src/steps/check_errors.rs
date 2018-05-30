@@ -1,10 +1,11 @@
-use failure::ResultExt;
-use regex::Regex;
-use serde_json as json;
 use std::cmp;
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+use failure::ResultExt;
+use regex::Regex;
+use serde_json as json;
 
 use super::{TestStep, TestStepFactory};
 use cargo_messages;
