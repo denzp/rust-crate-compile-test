@@ -27,6 +27,8 @@ pub enum TestingError {
         path: PathBuf,
         error: Error,
     },
+
+    UnableToParseExpansion,
 }
 
 struct ErrorDisplay<S1, S2>
@@ -78,6 +80,11 @@ impl fmt::Display for TestingError {
                     formatting::display_list(unexpected),
                     formatting::display_list(missing)
                 )),
+            },
+
+            TestingError::UnableToParseExpansion => ErrorDisplay {
+                header: "Internal error: Unable to parse expanded output!".into(),
+                content: None,
             },
         };
 

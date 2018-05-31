@@ -3,6 +3,11 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use regex::Regex;
+use rustfmt;
+use syntax;
+use syntax::ast::{ItemKind, Mod};
+use syntax::codemap::{FileName, FilePathMapping, Pos};
+use syntax::parse::{parse_crate_from_source_str, ParseSess};
 
 use super::{TestStep, TestStepFactory};
 use config::{Config, Profile};
@@ -74,14 +79,97 @@ impl CheckExpansionStep {
 
         match raw_output.status.success() {
             false => bail!(TestingError::CrateBuildFailed { stdout, stderr }),
-            true => Self::analyse_actual_expansion(&stdout),
+            true => syntax::with_globals(|| Self::analyse_actual_expansion(stdout)),
         }
     }
 
-    pub fn analyse_actual_expansion(_output: &str) -> Result<BTreeMap<String, String>> {
-        // println!("{}", output);
+    fn analyse_actual_expansion(code: String) -> Result<BTreeMap<String, String>> {
+        let session = ParseSess::new(FilePathMapping::empty());
 
-        Ok(BTreeMap::new())
+        let ast = {
+            parse_crate_from_source_str(FileName::Anon, code.clone(), &session)
+                .map_err(|_| TestingError::UnableToParseExpansion)?
+        };
+
+        let expansions = Self::analyse_module_expansion_recursive(&ast.module, code, 0)
+            .into_iter()
+            .map(|item| {
+                (
+                    Self::normalize_module_name(item.0),
+                    Self::format_expansion(&item.1).unwrap_or(item.1.trim().into()),
+                )
+            })
+            .collect();
+
+        Ok(expansions)
+    }
+
+    fn analyse_module_expansion_recursive(
+        module: &Mod,
+        mut code: String,
+        mut offset: usize,
+    ) -> BTreeMap<String, String> {
+        let mut result = BTreeMap::new();
+
+        for item in &module.items {
+            if let ItemKind::Mod(ref item_mod) = item.node {
+                let outer_start = item.span.lo().to_usize() - offset;
+                let inner_start = item_mod.inner.lo().to_usize() - offset;
+
+                let outer_len = item.span.hi().to_usize() - item.span.lo().to_usize();
+                let inner_len = item_mod.inner.hi().to_usize() - item_mod.inner.lo().to_usize() - 1; // TODO: investigate about weird "len - 1" thing
+
+                let mut nested_expansions = Self::analyse_module_expansion_recursive(
+                    item_mod,
+                    String::from(&code[inner_start..inner_start + inner_len]),
+                    item_mod.inner.lo().to_usize(),
+                );
+
+                result.append(
+                    &mut nested_expansions
+                        .into_iter()
+                        .map(|(key, value)| (item.ident.to_string() + "/" + &key, value))
+                        .collect(),
+                );
+
+                offset += outer_len;
+                code = String::from(&code[0..outer_start]) + &code[outer_start + outer_len..];
+            }
+        }
+
+        result.insert("mod".into(), code);
+        result
+    }
+
+    fn normalize_module_name(name: String) -> String {
+        if name == "mod" {
+            "lib".into()
+        } else if name.ends_with("/mod") {
+            name.chars().take(name.len() - 4).collect()
+        } else if name.ends_with("mod") {
+            name.chars().take(name.len() - 3).collect()
+        } else {
+            name
+        }
+    }
+
+    fn format_expansion(expansion: &str) -> Option<String> {
+        use rustfmt::{self, format_input, EmitMode, Input, Verbosity};
+
+        let (mut config, _) = rustfmt::load_config::<NullFormattingOptions>(None, None).unwrap();
+
+        config.set().emit_mode(EmitMode::Stdout);
+        config.set().verbose(Verbosity::Quiet);
+        config.set().hide_parse_errors(true);
+
+        let input = Input::Text(expansion.into());
+        let mut output: Vec<u8> = Vec::with_capacity(expansion.len() * 2);
+
+        match format_input(input, &config, Some(&mut output)) {
+            Ok(_) if output.is_empty() && !expansion.is_empty() => None,
+            Ok(_) => Some(String::from_utf8_lossy(&output).trim().to_owned()),
+            Err(_) => None,
+        }
     }
 }
 
@@ -120,5 +208,17 @@ impl TestStep for CheckExpansionStep {
         Self::find_actual_expansion(config, &self.crate_dir, build_path)?;
 
         Ok(())
+    }
+}
+
+struct NullFormattingOptions;
+
+impl rustfmt::CliOptions for NullFormattingOptions {
+    fn apply_to(self, _: &mut rustfmt::Config) {
+        unreachable!();
+    }
+
+    fn config_path(&self) -> Option<&Path> {
+        unreachable!();
     }
 }
