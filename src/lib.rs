@@ -9,7 +9,6 @@ extern crate lazy_static;
 
 extern crate colored;
 extern crate regex;
-extern crate rustfmt_nightly as rustfmt;
 extern crate serde;
 extern crate serde_json;
 extern crate syntax;

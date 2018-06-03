@@ -13,3 +13,10 @@ macro_rules! custom_fn {
 custom_fn!(other_fn() {
     0
 });
+
+
+mod inner_mod {
+    custom_fn!(inner_fn() {
+        1
+    });
+}

@@ -4,70 +4,63 @@ use tempfile::tempdir;
 
 use crate_compile_test::config::{Config, Mode};
 use crate_compile_test::steps::TestStepFactory;
-use crate_compile_test::utils::SourceCodeAnalyser;
 
-use crate_compile_test::steps::check_expansion::{
-    CheckExpansionStep, CheckExpansionStepFactory, ExpectedExpansion,
-};
+use crate_compile_test::steps::check_expansion::{CheckExpansionStep, CheckExpansionStepFactory};
+
+#[test]
+#[ignore]
+fn it_should_tokenize_expressions() {
+    // TODO
+}
 
 #[test]
 fn it_should_collect_expected_expansions() {
     let crate_path = Path::new("example/tests/expand/expand-1");
-    let messages = CheckExpansionStepFactory::analyse_crate(&crate_path).unwrap();
+    let actual_expectations = CheckExpansionStepFactory::find_expected_expansion(&crate_path);
 
-    assert_eq!(
-        messages,
-        &[
-            ExpectedExpansion {
-                module: "lib".into(),
-                expansion: "x = 2;".into(),
-            },
-            ExpectedExpansion {
-                module: "lib".into(),
-                expansion: "x = 1 + 1;".into(),
-            },
-            ExpectedExpansion {
-                module: "lib".into(),
-                expansion: "y = 1 + 1;".into(),
-            },
-            ExpectedExpansion {
-                module: "lib".into(),
-                expansion: "y = 2 + 2;".into(),
-            },
-            ExpectedExpansion {
-                module: "lib".into(),
-                expansion: "y = 4 + 4;".into(),
-            },
-            ExpectedExpansion {
-                module: "mod_2".into(),
-                expansion: "pub fn other_fn(_arg: u32) -> u32 {".into(),
-            },
-            ExpectedExpansion {
-                module: "mod_2".into(),
-                expansion: "0".into(),
-            },
-            ExpectedExpansion {
-                module: "mod_2".into(),
-                expansion: "}".into(),
-            },
-            ExpectedExpansion {
-                module: "mod_2/nested_mod_1".into(),
-                expansion: "t = [4, 3, 2, 6];".into(),
-            },
-            ExpectedExpansion {
-                module: "mod_1".into(),
-                expansion: "pub fn div_n(a: f64) -> f64 {".into(),
-            },
-            ExpectedExpansion {
-                module: "mod_1".into(),
-                expansion: "a / 4 as f64".into(),
-            },
-            ExpectedExpansion {
-                module: "mod_1".into(),
-                expansion: "}".into(),
-            },
-        ]
+    let mut expected_expectations = BTreeMap::new();
+
+    expected_expectations.insert(
+        "lib".into(),
+        vec![
+            to_owned_vec(&["x", "=", "2", ";"]),
+            to_owned_vec(&["x", "=", "1", "+", "1", ";"]),
+            to_owned_vec(&["y", "=", "1", "+", "1", ";"]),
+            to_owned_vec(&["y", "=", "2", "+", "2", ";"]),
+            to_owned_vec(&["y", "=", "4", "+", "4", ";"]),
+        ],
     );
+
+    expected_expectations.insert(
+        "mod_2".into(),
+        vec![
+            to_owned_vec(&[
+                "pub", "fn", "other_fn", "(", "_arg", ":", "u32", ")", "->", "u32", "{",
+            ]),
+            to_owned_vec(&["0"]),
+            to_owned_vec(&["}"]),
+        ],
+    );
+
+    expected_expectations.insert(
+        "mod_2/nested_mod_1".into(),
+        vec![to_owned_vec(&[
+            "t", "=", "[", "4", ",", "3", ",", "2", ",", "6", "]", ";",
+        ])],
+    );
+
+    expected_expectations.insert(
+        "mod_1".into(),
+        vec![
+            to_owned_vec(&[
+                "pub", "fn", "div_n", "(", "a", ":", "f64", ")", "->", "f64", "{",
+            ]),
+            to_owned_vec(&["a", "/", "4", "as", "f64"]),
+            to_owned_vec(&["}"]),
+        ],
+    );
+
+    assert_eq!(actual_expectations.unwrap(), expected_expectations);
 }
 
 #[test]
@@ -85,56 +78,122 @@ fn it_should_collect_actual_expansion() {
 
     expected_expansion.insert(
         "lib".into(),
-        String::from(
-            r#"
-#[prelude_import]
-use std::prelude::v1::*;
-#[macro_use]
-extern crate std;
-
-fn some_fn() {
-    let x = 1 + 1;
-    let mut y;
-    y = 1 + 1;
-    y = 1 + 2;
-    y = 3 + 3;
-    y = 4 + 4;
-}
-            "#.trim(),
-        ),
+        to_owned_vec(&[
+            "#",
+            "[",
+            "prelude_import",
+            "]",
+            "use",
+            "std",
+            "::",
+            "prelude",
+            "::",
+            "v1",
+            "::",
+            "*",
+            ";",
+            "#",
+            "[",
+            "macro_use",
+            "]",
+            "extern",
+            "crate",
+            "std",
+            ";",
+            "fn",
+            "some_fn",
+            "(",
+            ")",
+            "{",
+            "let",
+            "x",
+            "=",
+            "1",
+            "+",
+            "1",
+            ";",
+            "let",
+            "mut",
+            "y",
+            ";",
+            "y",
+            "=",
+            "1",
+            "+",
+            "1",
+            ";",
+            "y",
+            "=",
+            "1",
+            "+",
+            "2",
+            ";",
+            "y",
+            "=",
+            "3",
+            "+",
+            "3",
+            ";",
+            "y",
+            "=",
+            "4",
+            "+",
+            "4",
+            ";",
+            "}",
+        ]),
     );
 
     expected_expansion.insert(
         "mod_1".into(),
-        String::from(
-            r#"
-pub fn div_n(a: f64) -> f64 {
-    a / 5 as f64
-}
-            "#.trim(),
-        ),
+        to_owned_vec(&[
+            "pub", "fn", "div_n", "(", "a", ":", "f64", ")", "->", "f64", "{", "a", "/", "5", "as",
+            "f64", "}",
+        ]),
     );
 
     expected_expansion.insert(
         "mod_2".into(),
-        String::from(
-            r#"
-pub fn other_fn(_arg: u32) -> u32 {
-    0
-}
-            "#.trim(),
-        ),
+        to_owned_vec(&[
+            "pub",
+            "fn",
+            "other_fn",
+            "(",
+            "_arg",
+            ":",
+            "u32",
+            ")",
+            "->",
+            "u32",
+            "{",
+            "0",
+            "}",
+            "mod",
+            "inner_mod",
+            "{",
+            "pub",
+            "fn",
+            "inner_fn",
+            "(",
+            "_arg",
+            ":",
+            "u32",
+            ")",
+            "->",
+            "u32",
+            "{",
+            "1",
+            "}",
+            "}",
+        ]),
     );
 
     expected_expansion.insert(
         "mod_2/nested_mod_1".into(),
-        String::from(
-            r#"
-pub fn reverse() {
-    let t = [4, 3, 2, 6];
-}
-            "#.trim(),
-        ),
+        to_owned_vec(&[
+            "pub", "fn", "reverse", "(", ")", "{", "let", "t", "=", "[", "4", ",", "3", ",", "2",
+            ",", "6", "]", ";", "}",
+        ]),
     );
 
     assert_eq!(actual_expansion.unwrap(), expected_expansion);
@@ -197,4 +256,8 @@ fn it_should_use_target_from_config() {
             .to_string()
             .contains("Could not find specification for target \"non-existing-target\"")
     );
+}
+
+fn to_owned_vec(tokens: &[&str]) -> Vec<String> {
+    tokens.iter().map(|item| String::from(*item)).collect()
 }
