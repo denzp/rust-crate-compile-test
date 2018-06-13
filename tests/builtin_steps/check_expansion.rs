@@ -8,9 +8,26 @@ use crate_compile_test::steps::TestStepFactory;
 use crate_compile_test::steps::check_expansion::{CheckExpansionStep, CheckExpansionStepFactory};
 
 #[test]
-#[ignore]
 fn it_should_tokenize_expressions() {
-    // TODO
+    assert_eq!(
+        CheckExpansionStepFactory::parse_tokens(r#"any string"#.into()),
+        to_owned_vec(&["any", "string"]),
+    );
+
+    assert_eq!(
+        CheckExpansionStepFactory::parse_tokens(r#""any" string"#.into()),
+        to_owned_vec(&[r#""any""#, "string"]),
+    );
+
+    assert_eq!(
+        CheckExpansionStepFactory::parse_tokens(r#"a [..] b"#.into()),
+        to_owned_vec(&["a", "[", "..", "]", "b"]),
+    );
+
+    assert_eq!(
+        CheckExpansionStepFactory::parse_tokens(r#""a [..] b""#.into()),
+        to_owned_vec(&[r#""a [..] b""#]),
+    );
 }
 
 #[test]

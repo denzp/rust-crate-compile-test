@@ -65,6 +65,43 @@ impl CheckExpansionStepFactory {
         Ok(result)
     }
 
+    pub fn parse_tokens(source: String) -> Vec<String> {
+        syntax::with_globals(|| {
+            let session = ParseSess::new(FilePathMapping::empty());
+
+            let mut tokens = Vec::new();
+            let mut reader = StringReader::new(
+                &session,
+                session.codemap().new_filemap(FileName::Anon, source),
+                None,
+            );
+
+            loop {
+                match reader.try_next_token() {
+                    Ok(token) => match token.tok {
+                        Token::Eof => {
+                            break;
+                        }
+
+                        Token::Whitespace => {
+                            continue;
+                        }
+
+                        _ => {
+                            tokens.push(TokenStream::from(token.tok).to_string());
+                        }
+                    },
+
+                    Err(_) => {
+                        break;
+                    }
+                }
+            }
+
+            tokens
+        })
+    }
+
     fn transform_path_into_module(path: &Path) -> String {
         lazy_static! {
             static ref MODULE_NAME_REGEX: Regex = Regex::new(r"src/(.+?)(/mod)?.rs").unwrap();
@@ -74,42 +111,6 @@ impl CheckExpansionStepFactory {
             Some(captures) => captures[1].into(),
             None => path.to_string_lossy().into(),
         }
-    }
-
-    fn parse_tokens(source: String) -> Vec<String> {
-        let session = ParseSess::new(FilePathMapping::empty());
-
-        let mut tokens = Vec::new();
-        let mut reader = StringReader::new(
-            &session,
-            session.codemap().new_filemap(FileName::Anon, source),
-            None,
-        );
-
-        loop {
-            match reader.try_next_token() {
-                Ok(token) => match token.tok {
-                    Token::Eof => {
-                        break;
-                    }
-
-                    Token::Whitespace => {
-                        continue;
-                    }
-
-                    _ => {
-                        tokens.push(TokenStream::from(token.tok).to_string());
-                    }
-                },
-
-                Err(_) => {
-                    // TODO: when can this happend?
-                    break;
-                }
-            }
-        }
-
-        tokens
     }
 }
 
@@ -126,9 +127,7 @@ impl SourceCodeAnalyser<RawExpectedExpansion> for CheckExpansionStepFactory {
         if let Some(captures) = EXPANSION_REGEX.captures(line.1) {
             Ok(Some(RawExpectedExpansion {
                 module: Self::transform_path_into_module(path),
-                tokens: syntax::with_globals(|| {
-                    CheckExpansionStepFactory::parse_tokens(captures[1].into())
-                }),
+                tokens: CheckExpansionStepFactory::parse_tokens(captures[1].into()),
             }))
         } else {
             Ok(None)
